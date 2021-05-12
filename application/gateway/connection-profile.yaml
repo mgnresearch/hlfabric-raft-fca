@@ -1,0 +1,234 @@
+---
+#
+# The network connection profile provides client applications the information about the target
+# blockchain network that are necessary for the applications to interact with it. These are all
+# knowledge that must be acquired from out-of-band sources. This file provides such a source.
+#
+name: "biz.blockchain.devchannel.profile"
+
+#
+# Any properties with an "x-" prefix will be treated as application-specific, exactly like how naming
+# in HTTP headers or swagger properties work. The SDK will simply ignore these fields and leave
+# them for the applications to process. This is a mechanism for different components of an application
+# to exchange information that are not part of the standard schema described below. In particular,
+# the "x-type" property with the "hlfv1" value example below is used by Hyperledger Composer to
+# determine the type of Fabric networks (v0.6 vs. v1.0) it needs to work with.
+#
+x-type: "hlfv1"
+
+#
+# Describe what the target network is/does.
+#
+description: "The multi-org network with channel: devchannel"
+
+#
+# Schema version of the content. Used by the SDK to apply the corresponding parsing rules.
+#
+version: "1.0"
+
+#
+# The client section is SDK-specific. The sample below is for the node.js SDK
+#
+client:
+  # Which organization does this application instance belong to? The value must be the name of an org
+  # defined under "organizations"
+  organization: Anchova
+
+  # Some SDKs support pluggable KV stores, the properties under "credentialStore"
+  # are implementation specific
+  #credentialStore:
+    # [Optional]. Specific to FileKeyValueStore.js or similar implementations in other SDKs. Can be others
+    # if using an alternative impl. For instance, CouchDBKeyValueStore.js would require an object
+    # here for properties like url, db name, etc.
+    #path: "/tmp/hfc-kvs"
+
+    # [Optional]. Specific to the CryptoSuite implementation. Software-based implementations like
+    # CryptoSuite_ECDSA_AES.js in node SDK requires a key store. PKCS#11 based implementations does
+    # not.
+    #cryptoStore:
+      # Specific to the underlying KeyValueStore that backs the crypto key store.
+      #path: "/tmp/hfc-cvs"
+
+    # [Optional]. Specific to Composer environment
+    #wallet: wallet-name
+
+
+# [Optional]. But most apps would have this section so that channel objects can be constructed
+# based on the content below. If an app is creating channels, then it likely will not need this
+# section.
+#
+channels:
+  # Name of the channel
+  devchannel:
+    # Required. list of orderers designated by the application to use for transactions on this
+    # channel. This list can be a result of access control ("org1" can only access "ordererA"), or
+    # operational decisions to share loads from applications among the orderers.  The values must
+    # be "names" of orgs defined under "organizations/peers"
+    #
+    orderers:
+      - orderer-sea.blockchain.biz
+
+    # Required. list of peers from participating orgs
+    #
+    peers:
+      #
+      peer0-anchova.blockchain.biz:
+        # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must
+        # have the chaincode installed. The app can also use this property to decide which peers
+        # to send the chaincode install request. Default: true
+        endorsingPeer: true
+
+        # [Optional]. will this peer be sent query proposals? The peer must have the chaincode
+        # installed. The app can also use this property to decide which peers to send the
+        # chaincode install request. Default: true
+        chaincodeQuery: true
+
+        # [Optional]. will this peer be sent query proposals that do not require chaincodes, like
+        # queryBlock(), queryTransaction(), etc. Default: true
+        ledgerQuery: true
+
+        # [Optional]. will this peer be the target of the SDK's listener registration? All peers can
+        # produce events but the app typically only needs to connect to one to listen to events.
+        # Default: true
+        eventSource: true
+      
+      peer1-anchova.blockchain.biz:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      
+      peer0-badejo.blockchain.biz:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+      peer1-badejo.blockchain.biz:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+    # [Optional]. what chaincodes are expected to exist on this channel? The application can use
+    # this information to validate that the target peers are in the expected state by comparing
+    # this list with the query results of getInstalledChaincodes() and getInstantiatedChaincodes()
+    chaincodes:
+      # the format follows the "cannonical name" of chaincodes by fabric code
+      - example02:1.0.0
+
+#
+# List of participating organizations in this network
+#
+organizations:
+  #
+  Anchova:
+    mspid: AnchovaMSP
+    peers:
+      - peer0-anchova.blockchain.biz
+      - peer1-anchova.blockchain.biz
+
+    # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
+    # network. Typically certificates provisioning is done in a separate process outside of the
+    # runtime network. Fabric-CA is a special certificate authority that provides a REST APIs for
+    # dynamic certificate management (enroll, revoke, re-enroll). The following section is only for
+    # Fabric-CA servers.
+    #
+    certificateAuthorities:
+     - rca-anchova.blockchain.biz
+    adminPrivateKey:
+      path: ../anchova/rca/users/admin/msp/keystore/key.pem
+    signedCert:
+      path: ../anchova/rca/users/admin/msp/signcerts/cert.pem
+
+  
+  Badejo:
+    mspid: BadejoMSP
+    peers:
+      - peer0-badejo.blockchain.biz
+      - peer1-badejo.blockchain.biz
+    
+    certificateAuthorities:
+     - rca-badejo.blockchain.biz
+    adminPrivateKey:
+      path: ../badejo/rca/users/admin/msp/keystore/key.pem
+    signedCert:
+      path: ../badejo/rca/users/admin/msp/signcerts/cert.pem
+
+#
+# List of orderers to send transaction and channel create/update requests to. For the time
+# being only one orderer is needed. If more than one is defined, which one get used by the
+# SDK is implementation specific. Consult each SDK's documentation for its handling of orderers.
+#
+
+# https://stackoverflow.com/questions/55219497/error-initializing-the-network-channel-from-node-sdk-in-hyperledger-fabric
+# Enable TLS on all of the Fabric nodes (peers, orderers, certificate authorities) to secure communications. Your connection profile has 
+# "grpc://" and "http://" URLs - these should be changed to "grpcs://" and "https://". It looks like the TLS CA certificates are correct.
+
+orderers:
+  #
+  orderer-sea.blockchain.biz:
+    url: grpcs://orderer-sea.blockchain.biz:7050
+
+    # these are standard properties defined by the gRPC library
+    # they will be passed in as-is to gRPC client constructor
+    grpcOptions:
+      ssl-target-name-override: orderer-sea.blockchain.biz
+
+    tlsCACerts:
+      ptah: ../sea/rca/users/orderer/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+
+#
+# List of peers to send various requests to, including endorsement, query
+# and event listener registration.
+#
+peers:
+  #
+  peer0-anchova.blockchain.biz:
+    # this URL is used to send endorsement and query requests
+    url: grpcs://peer0-anchova.blockchain.biz:7034
+
+    grpcOptions:
+      ssl-target-name-override: peer0-anchova.blockchain.biz
+      request-timeout: 120001
+
+    tlsCACerts:
+      path: ../anchova/rca/users/peer0/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+
+  #
+  peer1-anchova.blockchain.biz:
+    # this URL is used to send endorsement and query requests
+    url: grpcs://peer1-anchova.blockchain.biz:7134
+
+    grpcOptions:
+      ssl-target-name-override: peer1-anchova.blockchain.biz
+      request-timeout: 120001
+
+    tlsCACerts:
+      path: ../anchova/rca/users/peer1/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+
+  #
+  peer0-badejo.blockchain.biz:
+    # this URL is used to send endorsement and query requests
+    url: grpcs://peer0-badejo.blockchain.biz:7044
+
+    grpcOptions:
+      ssl-target-name-override: peer0-badejo.blockchain.biz
+      request-timeout: 120001
+
+    tlsCACerts:
+      path: ../badejo/rca/users/peer0/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+
+  #
+  peer1-badejo.blockchain.biz:
+    # this URL is used to send endorsement and query requests
+    url: grpcs://peer1-badejo.blockchain.biz:7144
+
+    grpcOptions:
+      ssl-target-name-override: peer1-badejo.blockchain.biz
+      request-timeout: 120001
+
+    tlsCACerts:
+      path: ../badejo/rca/users/peer1/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+
+# END
