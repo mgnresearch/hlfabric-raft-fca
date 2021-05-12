@@ -56,7 +56,7 @@ The source-code will focus on how the blockchain architect may use sources to co
 1. Stop TLSR CA
     1. Shutdown TLSR CA container.
 1. Genesis:
-    1. Inspect the file './configtx/confitx.yaml;
+    1. Inspect the file './configtx/confitx.yaml';
     1. Generate genesis block to run system channel, named _syschannel_:
         1. Run the file '1-generate-genesis-block.sh';
         1. Verify the file _"genesis.block"_ created at "./configtx" folder.
