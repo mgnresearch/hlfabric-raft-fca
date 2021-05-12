@@ -1,0 +1,26 @@
+sudo gedit /etc/hosts
+#
+#
+127.0.0.1 ca.tlsrcontrol.blockchain.biz
+#
+127.0.0.1 rca.corpbrasilia.blockchain.biz
+127.0.0.1 peer1.corpbrasilia.blockchain.biz
+127.0.0.1 peer2.corpbrasilia.blockchain.biz
+#
+127.0.0.1 rca.corptrading.blockchain.biz
+127.0.0.1 orderer1.corptrading.blockchain.biz
+127.0.0.1 orderer2.corptrading.blockchain.biz
+127.0.0.1 orderer3.corptrading.blockchain.biz
+127.0.0.1 orderer4.corptrading.blockchain.biz
+#
+127.0.0.1 rca.corpbrasilia.blockchain.biz
+127.0.0.1 peer1.corpbrasilia.blockchain.biz
+127.0.0.1 peer2.corpbrasilia.blockchain.biz
+#
+127.0.0.1 rca.corplisboa.blockchain.biz
+127.0.0.1 peer1.corplisboa.blockchain.biz
+127.0.0.1 peer2.corplisboa.blockchain.biz
+#
+127.0.0.1 rca.corpmaputo.blockchain.biz
+127.0.0.1 peer1.corpmaputo.blockchain.biz
+127.0.0.1 peer2.corpmaputo.blockchain.biz
