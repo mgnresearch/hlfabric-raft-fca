@@ -1,0 +1,388 @@
+# ----------
+# SPDX-License-Identifier: Apache-2.0
+# ----------
+#
+version: '3.5'
+
+networks:
+  corpmaputo.net:
+    name:  corpmaputo.blockchain
+
+services:
+
+  corpmaputo.rca:
+    container_name: corpmaputo.rca
+    image: hyperledger/fabric-ca:1.4.9
+    environment:
+      - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca/server
+      - FABRIC_CA_SERVER_PORT=8005
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CA_NAME=rca.corpmaputo.blockchain.biz
+      - FABRIC_CA_SERVER_CSR_CN=corpmaputo.blockchain.biz
+      - FABRIC_CA_SERVER_CSR_HOSTS=rca.corpmaputo.blockchain.biz
+      - FABRIC_CA_SERVER_DEBUG=true
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:9045
+      - FABRIC_CA_SERVER_METRICS_PROVIDER=prometheus
+    working_dir: /etc/hyperledger/fabric-ca/server 
+    volumes:
+      - ./rca:/etc/hyperledger/fabric-ca
+    ports:
+      - 9005:9005
+      - 9045:9045
+    networks:
+      - corpmaputo.net
+    command: sh -c 'fabric-ca-server start -d -b rca-admin:rca-pwd --port 9005'
+
+# ==================================================================
+
+  corpmaputo.peer1.couchdb:
+    container_name: corpmaputo.peer1.couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE= corpmaputo.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_NETWORKID=corpmaputo.net
+      - COUCHDB_USER=admin-db
+      - COUCHDB_PASSWORD=admin-pwd
+    working_dir: /etc/hyperledger/couchdb
+    volumes:
+      - /var/run:/host/var/run
+      # Default root path
+      - ./couchdb1:/etc/hyperledger/couchdb
+    ports:
+      # internal port changed to avoid conflict with other peer in other docker-compose.yml
+      - 9132:5984
+    networks:
+      - corpmaputo.net
+
+  corpmaputo.peer1:
+    container_name: corpmaputo.peer1
+    image: hyperledger/fabric-peer:1.4.12
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE= corpmaputo.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - CORE_PEER_NETWORKID=corpmaputo.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer1.corpmaputo.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpMaputoMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer1/msp
+      - CORE_PEER_ADDRESS=peer1.corpmaputo.blockchain.biz:9134
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9134
+      - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:9134
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9135
+      - CORE_PEER_EVENTS_ADDRESS=0.0.0.0:9136
+      # Go profiling tools only in none production environment
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_COMMITTER_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # - CORE_PEER_CHAINCODE_MODE=dev
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.corpmaputo.blockchain.biz:9134
+      - CORE_PEER_GOSSIP_ENDPOINT=peer1.corpmaputo.blockchain.biz:9134
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.corpmaputo.blockchain.biz:9134
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # Logging
+      - CORE_LOGGING_LEVEL=info:kvledger,peer,couchdb=info
+      - FABRIC_LOGGING_SPEC=info,grpc,msp=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9145
+      - CORE_METRICS_PROVIDER=prometheus
+      # For each historic key update, the historic value and associated transaction id and timestamp 
+      # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
+      - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=corpmaputo.couchdb.peer1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpmaputo-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-corpmaputo-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ../configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 9134:9134
+      - 9135:9135
+      - 9136:9136
+      - 9145:9145
+    networks:
+      - corpmaputo.net
+    depends_on:
+      - corpmaputo.peer1.couchdb
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+
+  corpmaputo.peer1.cli:
+    container_name: corpmaputo.peer1.cli
+    image: hyperledger/fabric-tools:2.3.2
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE= corpmaputo.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_NETWORKID=corpmaputo.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer1.corpmaputo.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpMaputoMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
+      - CORE_PEER_ADDRESS=peer1.corpmaputo.blockchain.biz:9134
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # Logging
+      - CORE_LOGGING_LEVEL=info:kvledger,peer,couchdb=info
+      - FABRIC_LOGGING_SPEC=info,grpc,msp=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      - CORE_LOGGING_LEDGER=info
+      - CORE_LOGGING_MSP=info
+      - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpmaputo-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-corpmaputo-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ../configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    networks:
+      - corpmaputo.net
+    depends_on:
+      - corpmaputo.peer1
+    command: /bin/bash
+
+# ==================================================================
+
+  corpmaputo.peer2.couchdb:
+    container_name: corpmaputo.peer2.couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE= corpmaputo.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_NETWORKID=corpmaputo.net
+      - COUCHDB_USER=admin-db
+      - COUCHDB_PASSWORD=admin-pwd
+    working_dir: /etc/hyperledger/couchdb
+    volumes:
+      - /var/run:/host/var/run
+      # Default root path
+      - ./couchdb2:/etc/hyperledger/couchdb
+    ports:
+      # internal port changed to avoid conflict with other peer in other docker-compose.yml
+      - 9232:5984
+    networks:
+      - corpmaputo.net
+
+  corpmaputo.peer2:
+    container_name: corpmaputo.peer2
+    image: hyperledger/fabric-peer:1.4.12
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE= corpmaputo.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - CORE_PEER_NETWORKID=corpmaputo.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer2.corpmaputo.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpMaputoMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer2/msp
+      - CORE_PEER_ADDRESS=peer2.corpmaputo.blockchain.biz:9234
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9234
+      - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:9234
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9235
+      - CORE_PEER_EVENTS_ADDRESS=0.0.0.0:9236
+      # Go profiling tools only in none production environment
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_COMMITTER_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # - CORE_PEER_CHAINCODE_MODE=dev
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer2.corpmaputo.blockchain.biz:9234
+      - CORE_PEER_GOSSIP_ENDPOINT=peer2.corpmaputo.blockchain.biz:9234
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.corpmaputo.blockchain.biz:9234
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # Logging
+      - CORE_LOGGING_LEVEL=info:kvledger,peer,couchdb=info
+      - FABRIC_LOGGING_SPEC=info,grpc,msp=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9245
+      - CORE_METRICS_PROVIDER=prometheus
+      # For each historic key update, the historic value and associated transaction id and timestamp 
+      # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
+      - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=corpmaputo.couchdb.peer2:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpmaputo-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer2/msp/cacerts/rca-corpmaputo-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./peer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ../configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 9234:9234
+      - 9235:9235
+      - 9236:9236
+      - 9245:9245
+    networks:
+      - corpmaputo.net
+    depends_on:
+      - corpmaputo.peer2.couchdb
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+
+  corpmaputo.peer2.cli:
+    container_name: corpmaputo.peer2.cli
+    image: hyperledger/fabric-tools:2.3.2
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE= corpmaputo.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_NETWORKID=corpmaputo.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer2.corpmaputo.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpMaputoMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
+      - CORE_PEER_ADDRESS=peer2.corpmaputo.blockchain.biz:9234
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # Logging
+      - CORE_LOGGING_LEVEL=info:kvledger,peer,couchdb=info
+      - FABRIC_LOGGING_SPEC=info,grpc,msp=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      - CORE_LOGGING_LEDGER=info
+      - CORE_LOGGING_MSP=info
+      - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpmaputo-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer2/msp/cacerts/rca-corpmaputo-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./peer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ../configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    networks:
+      - corpmaputo.net
+    depends_on:
+      - corpmaputo.peer2
+    command: /bin/bash
+
+# ==================================================================

@@ -1,0 +1,14 @@
+NodeOUs:
+  Enable: true
+  ClientOUIdentifier:
+    Certificate: cacerts/rca-corpmaputo-blockchain-biz-9005.pem
+    OrganizationalUnitIdentifier: client
+  PeerOUIdentifier:
+    Certificate: cacerts/rca-corpmaputo-blockchain-biz-9005.pem
+    OrganizationalUnitIdentifier: peer
+  AdminOUIdentifier:
+    Certificate: cacerts/rca-corpmaputo-blockchain-biz-9005.pem
+    OrganizationalUnitIdentifier: admin
+  OrdererOUIdentifier:
+    Certificate: cacerts/rca-corpmaputo-blockchain-biz-9005.pem
+    OrganizationalUnitIdentifier: orderer
