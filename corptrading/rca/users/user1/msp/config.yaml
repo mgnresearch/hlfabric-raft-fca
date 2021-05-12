@@ -1,0 +1,14 @@
+NodeOUs:
+  Enable: true
+  ClientOUIdentifier:
+    Certificate: cacerts/rca-corptrading-blockchain-biz-6005.pem
+    OrganizationalUnitIdentifier: client
+  PeerOUIdentifier:
+    Certificate: cacerts/rca-corptrading-blockchain-biz-6005.pem
+    OrganizationalUnitIdentifier: peer
+  AdminOUIdentifier:
+    Certificate: cacerts/rca-corptrading-blockchain-biz-6005.pem
+    OrganizationalUnitIdentifier: admin
+  OrdererOUIdentifier:
+    Certificate: cacerts/rca-corptrading-blockchain-biz-6005.pem
+    OrganizationalUnitIdentifier: orderer
