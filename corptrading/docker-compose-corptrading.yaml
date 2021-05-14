@@ -31,6 +31,9 @@ services:
       - FABRIC_CA_SERVER_METRICS_PROVIDER=prometheus
     working_dir: /etc/hyperledger/fabric-ca/server 
     volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
       - ./rca:/etc/hyperledger/fabric-ca
     networks:
       - corptrading.net

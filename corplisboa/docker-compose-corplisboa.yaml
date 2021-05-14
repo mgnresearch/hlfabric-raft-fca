@@ -25,6 +25,9 @@ services:
       - FABRIC_CA_SERVER_METRICS_PROVIDER=prometheus
     working_dir: /etc/hyperledger/fabric-ca/server 
     volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
       - ./rca:/etc/hyperledger/fabric-ca
     ports:
       - 8005:8005
@@ -49,7 +52,8 @@ services:
       - COUCHDB_PASSWORD=admin-pwd
     working_dir: /etc/hyperledger/couchdb
     volumes:
-      - /var/run:/host/var/run
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
       # Default root path
       - ./couchdb1:/etc/hyperledger/couchdb
     ports:
@@ -225,7 +229,8 @@ services:
       - COUCHDB_PASSWORD=admin-pwd
     working_dir: /etc/hyperledger/couchdb
     volumes:
-      - /var/run:/host/var/run
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
       # Default root path
       - ./couchdb2:/etc/hyperledger/couchdb
     ports:
