@@ -1,0 +1,10 @@
+{
+    "network-configs": {
+        "explorer.net": {
+            "name": "explorer.net",
+            "profile": "./connection-profile/corpbrasilia-net.json",
+            "enableAuthentication": false
+        }
+    },
+    "license": "Apache-2.0"
+}
