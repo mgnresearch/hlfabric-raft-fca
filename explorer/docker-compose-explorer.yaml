@@ -1,0 +1,144 @@
+# ----------
+# SPDX-License-Identifier: Apache-2.0
+# ----------
+#
+version: '3.5'
+
+networks:
+  explorer.net:
+    name: explorer.blockchain
+
+services:
+
+  explorer.db:
+    image: hyperledger/explorer-db:1.1.5
+    container_name: explorer.db
+    hostname: db.explorer.blockchain.biz
+    environment:
+      - DATABASE_ADDRESS=db.explorer.blockchain.biz:5432
+      - DATABASE_HOST=db.explorer.blockchain.biz
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hlexdb-admin
+      - DATABASE_PASSWORD=explorerdb-pwd  
+      - DATABASE_TYPE=postgresql
+      - GOPATH=/opt/gopath
+      - TZ=America/Sao_Paulo
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Map the folder to exchange data
+      - ./exchangedata:/etc/hyperledger/exchangedata
+      # Explorer DB mount path
+      - ./db/postgresql/data:/var/lib/postgresql/data
+    networks:
+      - explorer.net
+    healthcheck:
+      test: "pg_isready -h localhost -p 5432 -q -U postgres"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  explorer.app:
+    container_name: explorer.app
+    image: hyperledger/explorer:1.1.5
+    hostname: app.explorer.blockchain.biz
+    environment:
+      - CONNECTION_PROFILE_NETWORK=/opt/explorer/app/platform/fabric/connection-profile/corpbrasilia-net.json
+      - CONNECTION_PROFILE_PATH=/opt/explorer/app/platform/fabric/config.json
+      - DATABASE_ADDRESS=db.explorer.blockchain.biz:5432
+      - DATABASE_HOST=db.explorer.blockchain.biz
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hlexdb-admin
+      - DATABASE_PASSWD=explorerdb-pwd
+      - DATABASE_TYPE=postgresql
+      - EXPLORER_ADDRESS=app.explorer.blockchain.biz:8180
+      - EXPLORER_LISTENADDRESS=0.0.0.0:8180
+      - EXPLORER_LOCALMSPID=CorpBrasiliaMSP
+      - EXPLORER_NETWORKID=explorer.net
+      - EXPLORER_USERNAME=explorer-admin
+      # - EXPLORER_PASSWORD=explorer-pwd
+      - LOG_LEVEL_APP=debug
+      - LOG_LEVEL_DB=info
+      - LOG_LEVEL_CONSOLE=info
+      - LOG_CONSOLE_STDOUT=true
+      - DISCOVERY_AS_LOCALHOST=false
+      - GOPATH=/opt/gopath
+      - TZ=America/Sao_Paulo
+      # Additional USER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
+      - USER_CACERT=/etc/hyperledger/msp/users/user1/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/user1/admincerts/corpbrasilia-admin-cert.pem
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Map the folder to exchange data
+      - ./exchangedata:/etc/hyperledger/exchangedata
+      # Explorer APP mount path
+      - ./app/explorerconfig.json:/opt/explorer/app/explorerconfig.json
+      - ./app/config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./app/logs:/opt/explorer/logs
+      - ./app/platform/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ./app/ssl-certs:/opt/explorer/ssl-certs
+      - ./app/walletstore:/opt/explorer/wallet
+    ports:
+      - 8180:8180
+    networks:
+      - explorer.net
+    depends_on:
+      - explorer.db
+
+  explorer.cli:
+    container_name: explorer.cli
+    image: hyperledger/fabric-tools:2.3.2
+    tty: true
+    stdin_open: true
+    environment:
+      - CONNECTION_PROFILE_NETWORK=/opt/explorer/app/platform/fabric/connection-profile/corpbrasilia-net.json
+      - CONNECTION_PROFILE_PATH=/opt/explorer/app/platform/fabric/config.json
+      - DATABASE_ADDRESS=db.explorer.blockchain.biz:5432
+      - DATABASE_HOST=db.explorer.blockchain.biz
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hlexdb-admin
+      - DATABASE_PASSWD=explorerdb-pwd
+      - DATABASE_TYPE=postgresql
+      - EXPLORER_ADDRESS=app.explorer.blockchain.biz:8180
+      - EXPLORER_LISTENADDRESS=0.0.0.0:8180
+      - EXPLORER_LOCALMSPID=CorpBrasiliaMSP
+      - EXPLORER_NETWORKID=explorer.net
+      - EXPLORER_USERNAME=explorer-admin
+      - EXPLORER_PASSWORD=explorer-pwd
+      - LOG_LEVEL_APP=debug
+      - LOG_LEVEL_DB=info
+      - LOG_LEVEL_CONSOLE=info
+      - LOG_CONSOLE_STDOUT=true
+      - DISCOVERY_AS_LOCALHOST=false
+      - GOPATH=/opt/gopath
+      - TZ=America/Sao_Paulo
+      # Additional USER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
+      - USER_CACERT=/etc/hyperledger/msp/users/user1/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/user1/admincerts/corpbrasilia-admin-cert.pem
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/msp/
+      # Map the folder to exchange data
+      - ./exchangedata:/etc/hyperledger/exchangedata
+      # Explorer APP mount path
+      - ./app/explorerconfig.json:/opt/explorer/app/explorerconfig.json
+      - ./app/config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./app/logs:/opt/explorer/logs
+      - ./app/platform/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ./app/ssl-certs:/opt/explorer/ssl-certs
+      - ./app/walletstore:/opt/explorer/wallet
+    networks:
+      - explorer.net
+
+# ==================================================================
