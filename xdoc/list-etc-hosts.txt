@@ -24,3 +24,6 @@ sudo gedit /etc/hosts
 127.0.0.1 rca.corpmaputo.blockchain.biz
 127.0.0.1 peer1.corpmaputo.blockchain.biz
 127.0.0.1 peer2.corpmaputo.blockchain.biz
+#
+127.0.0.1 app.explorer.blockchain.biz
+127.0.0.1 db.explorer.blockchain.biz

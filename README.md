@@ -53,7 +53,7 @@ The source-code will focus on how the blockchain architect may use sources to co
         1. Register and enroll users at RCA;
         1. Enroll users at TLSR CA;
         1. Shutdown RCA.
-1. Stop TLSR CA
+1. Stop TLSR CA:
     1. Shutdown TLSR CA container.
 1. Genesis:
     1. Inspect the file './configtx/confitx.yaml';
@@ -63,10 +63,22 @@ The source-code will focus on how the blockchain architect may use sources to co
     1. Generate genesis transaction block to run development channel, named _devchannel_:
         1. Run the file '2-generate-genesis-tx.sh';
         1. Verify the file _"devchanneltrack.tx"_ created at "./configtx" folder.
-1. Start Orderers
+1. Start Orderers:
     1. Move to *CorpTrading* organization;
     1. Startup components, running 'corptrading-all-init.sh';
     1. Verify status running 'corptrading-check-status.sh';
+1. Prepare the Hyperledger Explorer configuration:
+    1. Follow the instructions inside "./explorer/INSTRUCTIONS.md" file
+1. Create channel "devchannel" from *CorpBrasilia* organization:
+    1. Certify that all organizations are running on-line.
+    1. Verify status running 'net-check-status.sh';
+    1. Call the CLI container at *CorpBrasilia*.
+    1. Inside CLI container at *CorpBrasilia*, run the commands from "./channel/create-devchannel.sh".
+1. Add peers in "devchannel" from CorpLisboa organization:
+    1. Certify that all organizations are running on-line.
+    1. Verify status running 'net-check-status.sh';
+    1. Call the CLI container at *CorpLisboa*.
+    1. Inside CLI container at *CorpBrasilia*, run the commands from "./channel/join-peers-at-devchannel.sh".
 
 ### END
 
