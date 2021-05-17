@@ -312,7 +312,7 @@ Orderer: &OrdererDefaults
     # as TLS validation.  The preferred way to specify orderer addresses is now
     # to include the OrdererEndpoints item in your org definition
     Addresses:
-        - orderer1.corptrading.blockchain.biz:6132
+        - orderer1.corptrading.blockchain.biz:6950
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -525,26 +525,26 @@ Profiles:
             EtcdRaft:
                 Consenters:
                 - Host: orderer1.corptrading.blockchain.biz
-                  Port: 6132
+                  Port: 6950
                   ClientTLSCert: ../corptrading/rca/users/orderer1/tls-msp/signcerts/cert.pem
                   ServerTLSCert: ../corptrading/rca/users/orderer1/tls-msp/signcerts/cert.pem
                 - Host: orderer2.corptrading.blockchain.biz
-                  Port: 6232
+                  Port: 6950
                   ClientTLSCert: ../corptrading/rca/users/orderer2/tls-msp/signcerts/cert.pem
                   ServerTLSCert: ../corptrading/rca/users/orderer2/tls-msp/signcerts/cert.pem
-                # - Host: orderer3.corptrading.blockchain.biz
-                #   Port: 6332
-                #   ClientTLSCert: ../corptrading/rca/users/orderer3/tls-msp/signcerts/cert.pem
-                #   ServerTLSCert: ../corptrading/rca/users/orderer3/tls-msp/signcerts/cert.pem
+                - Host: orderer3.corptrading.blockchain.biz
+                  Port: 6950
+                  ClientTLSCert: ../corptrading/rca/users/orderer3/tls-msp/signcerts/cert.pem
+                  ServerTLSCert: ../corptrading/rca/users/orderer3/tls-msp/signcerts/cert.pem
                 # - Host: orderer4.corptrading.blockchain.biz
-                #   Port: 6432
+                #   Port: 6950
                 #   ClientTLSCert: ../corptrading/rca/users/orderer4/tls-msp/signcerts/cert.pem
                 #   ServerTLSCert: ../corptrading/rca/users/orderer4/tls-msp/signcerts/cert.pem
             Addresses:
-                - orderer1.corptrading.blockchain.biz:6132
-                - orderer2.corptrading.blockchain.biz:6232
-                # - orderer3.corptrading.blockchain.biz:6332
-                # - orderer4.corptrading.blockchain.biz:6432
+                - orderer1.corptrading.blockchain.biz:6950
+                - orderer2.corptrading.blockchain.biz:6950
+                - orderer3.corptrading.blockchain.biz:6950
+                # - orderer4.corptrading.blockchain.biz:6950
             Organizations:
                 - *CorpTrading
             Capabilities:

@@ -84,10 +84,10 @@ Orderer: &OrdererDefaults
     # as TLS validation.  The preferred way to specify orderer addresses is now
     # to include the OrdererEndpoints item in your org definition
     Addresses:
-        - orderer1.corptrading.blockchain.biz:6132
-        - orderer2.corptrading.blockchain.biz:6232
-        #- orderer3.corptrading.blockchain.biz:6040
-        #- orderer4.corptrading.blockchain.biz:6050
+        - orderer1.corptrading.blockchain.biz:6130
+        - orderer2.corptrading.blockchain.biz:6230
+        #- orderer3.corptrading.blockchain.biz:6330
+        #- orderer4.corptrading.blockchain.biz:6430
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -145,17 +145,21 @@ Orderer: &OrdererDefaults
         # replicated under the Orderer MSP. Addresses key above.
         Consenters:
             - Host: orderer1.corptrading.blockchain.biz
-              Port: 6132
+              Port: 6130
               ClientTLSCert: ./rca/users/orderer1/tls-msp/signcerts/cert.pem
               ServerTLSCert: ./rca/users/orderer1/tls-msp/signcerts/cert.pem
             - Host: orderer2.corptrading.blockchain.biz
-              Port: 6232
+              Port: 6230
               ClientTLSCert: ./rca/users/orderer2/tls-msp/signcerts/cert.pem
               ServerTLSCert: ./rca/users/orderer2/tls-msp/signcerts/cert.pem
-            - Host: orderer3.corptrading.blockchain.biz
-              Port: 6332
-              ClientTLSCert: ./rca/users/orderer3/tls-msp/signcerts/cert.pem
-              ServerTLSCert: ./rca/users/orderer3/tls-msp/signcerts/cert.pem
+            # - Host: orderer3.corptrading.blockchain.biz
+            #   Port: 6330
+            #   ClientTLSCert: ./rca/users/orderer3/tls-msp/signcerts/cert.pem
+            #   ServerTLSCert: ./rca/users/orderer3/tls-msp/signcerts/cert.pem
+            # - Host: orderer4.corptrading.blockchain.biz
+            #   Port: 6430
+            #   ClientTLSCert: ./rca/users/orderer4/tls-msp/signcerts/cert.pem
+            #   ServerTLSCert: ./rca/users/orderer4/tls-msp/signcerts/cert.pem
 
         # Options to be specified for all the etcd/raft nodes. The values here
         # are the defaults for all new channels and can be modified on a
