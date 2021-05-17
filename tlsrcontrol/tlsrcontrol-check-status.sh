@@ -4,15 +4,15 @@
 # ----------
 #
 echo "- - - - - - - - -"
-echo "Verify: ca.tlsrcontrol.blockchain.biz:5001"
+echo "Verify: ca.tlsrcontrol.blockchain.biz:5045"
 
 echo "-> healthz"
-curl ca.tlsrcontrol.blockchain.biz:5001/healthz
+curl ca.tlsrcontrol.blockchain.biz:5045/healthz
 
 # echo "-> logspec"
-# curl ca.tlsrcontrol.blockchain.biz:5001/logspec
+# curl ca.tlsrcontrol.blockchain.biz:5045/logspec
 
 # echo "-> metrics"
-# curl ca.tlsrcontrol.blockchain.biz:5001/metrics
+# curl ca.tlsrcontrol.blockchain.biz:5045/metrics
 
 echo "- - - - - - - - -"
