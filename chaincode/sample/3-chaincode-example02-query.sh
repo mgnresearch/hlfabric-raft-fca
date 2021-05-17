@@ -14,23 +14,27 @@ CHCODENAME="example02"
 CHCODEPATH="/etc/hyperledger/chaincode/sample"
 PEER_ADDRESS="peer1.corpbrasilia.blockchain.biz:7134"
 
-# List installed chaincodes 
+# List instantiated chaincodes 
 #----------------------------------------------------------------
-peer chaincode list --installed -C $CHANNELNAME
+peer chaincode list --instantiated -C $CHANNELNAME
 
 # Get channel information 
 #----------------------------------------------------------------
 peer channel getinfo -o $ORDERERNAME -c $CHANNELNAME --tls --cafile $CORE_PEER_TLS_ROOTCERT_FILE
 
-# Instantiate chaincode 
-# https://hyperledger-fabric.readthedocs.io/en/release-1.4/endorsement-policies.html
+
+# Query Health Check 
 #----------------------------------------------------------------
-peer chaincode instantiate -C $CHANNELNAME -n $CHCODENAME -v $CHCODEVERSION -o $ORDERERNAME \
-    -c '{"Args":["init","a","150","b","350"]}' \
-    -P "OR('CorpTradingMSP.admin','CorpTradingMSP.member','CorpTradingMSP.client','CorpBrasiliaMSP.admin','CorpBrasiliaMSP.member','CorpBrasiliaMSP.client','CorpLisboaMSP.admin','CorpLisboaMSP.member','CorpLisboaMSP.client')" \
-    ---tls --cafile $CORE_PEER_TLS_ROOTCERT_FILE --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE
+peer chaincode query -C $CHANNELNAME -n $CHCODENAME -c '{"Args":["healthCheck",""]}' --tls --cafile $CORE_PEER_TLS_ROOTCERT_FILE
 
 
-# List instantiated chaincodes 
+# Query chaincodes 
 #----------------------------------------------------------------
-peer chaincode list --instantiated -C $CHANNELNAME
+echo -n "query A = "
+
+peer chaincode query -C $CHANNELNAME -n $CHCODENAME -c '{"Args":["query","a"]}' --tls --cafile $CORE_PEER_TLS_ROOTCERT_FILE
+
+#----------------------------------------------------------------
+echo -n "query B = "
+
+peer chaincode query -C $CHANNELNAME -n $CHCODENAME -c '{"Args":["query","b"]}' --tls --cafile $CORE_PEER_TLS_ROOTCERT_FILE

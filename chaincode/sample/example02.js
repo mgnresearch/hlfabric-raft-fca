@@ -56,18 +56,22 @@ var Chaincode = class {
    * @param {Context} stub 
    */
   async Invoke(stub) {
+    
     let ret = stub.getFunctionAndParameters();
     console.info(ret);
+    
     let method = this[ret.fcn];
+    
     if (!method) {
       console.log('no method of name:' + ret.fcn + ' found');
       return shim.success();
     }
+    
     try {
       let payload = await method(stub, ret.params);
       return shim.success(payload);
     } catch (err) {
-      console.log(err);
+      console.log(err);Avalbytes
       return shim.error(err);
     }
   }
@@ -159,6 +163,32 @@ var Chaincode = class {
     console.info(jsonResp);
     return Avalbytes;
   }
+
+  /**
+   * Health Check
+   * @param {Context} stub 
+   * @param {array} args 
+   */
+  async healthCheck(stub, args) {
+    
+    let stateMessage = "Contract: " + contractName + ", with version: " + contractVersion + ", at date-time: " + this.getDateTime();
+
+    return stateMessage.toString();
+  }
+
+  /**
+   * Put date and time in string format
+   */
+  async getDateTime(){
+    
+    var current = new Date();
+
+    var dateTimeStr = current.getFullYear() + "-" + (current.getMonth() + 1) + "-" + current.getDate() + 
+                      " " + current.getHours() + ":" + current.getMinutes() + ":" + current.getSeconds();
+
+    return dateTimeStr;
+  }
+
 };
 
 shim.start(new Chaincode());
