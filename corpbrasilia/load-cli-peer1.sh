@@ -4,6 +4,6 @@
 # ----------
 #
 
-docker exec -it cli.corpbrasilia.peer1 bash
+docker exec -it corpbrasilia.peer1.cli bash
 
 #END
