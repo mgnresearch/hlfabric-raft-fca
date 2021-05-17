@@ -1,0 +1,557 @@
+# ----------
+# SPDX-License-Identifier: Apache-2.0
+# ----------
+#
+version: '3.5'
+
+networks:
+  multiorg.net:
+    name: multiorg.blockchain
+
+services:
+
+# ==================================================================
+  corptrading.orderer1:
+    container_name: corptrading.orderer1
+    image: hyperledger/fabric-orderer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corptrading.net
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=6950
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=CorpTradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:6945
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corptrading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-corptrading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer1-corptrading
+      - ORDERER_HOST=orderer1.corptrading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corptrading/orderer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corptrading/rca/client:/etc/hyperledger/msp/client
+      - ./corptrading/rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./corptrading/rca/users/orderer1:/etc/hyperledger/msp/users/orderer
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6130:6950
+      - 6145:6945
+    networks:
+      - multiorg.net
+    command: orderer
+
+  corptrading.orderer2:
+    container_name: corptrading.orderer2
+    image: hyperledger/fabric-orderer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corptrading.net
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=6950
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=CorpTradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:6945
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corptrading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-corptrading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer2-corptrading
+      - ORDERER_HOST=orderer2.corptrading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corptrading/orderer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corptrading/rca/client:/etc/hyperledger/msp/client
+      - ./corptrading/rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./corptrading/rca/users/orderer2:/etc/hyperledger/msp/users/orderer
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6230:6950
+      - 6245:6945
+    networks:
+      - multiorg.net
+    command: orderer
+
+  corptrading.orderer3:
+    container_name: corptrading.orderer3
+    image: hyperledger/fabric-orderer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corptrading.net
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=6950
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=CorpTradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:6945
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corptrading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-corptrading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer3-corptrading
+      - ORDERER_HOST=orderer3.corptrading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corptrading/orderer3:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corptrading/rca/client:/etc/hyperledger/msp/client
+      - ./corptrading/rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./corptrading/rca/users/orderer3:/etc/hyperledger/msp/users/orderer
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6330:6950
+      - 6345:6945
+    networks:
+      - multiorg.net
+    command: orderer
+  
+# ==================================================================
+
+  corpbrasilia.peer1.couchdb:
+    container_name: corpbrasilia.peer1.couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_NETWORKID=multiorg.net
+      - COUCHDB_USER=admin-db
+      - COUCHDB_PASSWORD=admin-pwd
+    working_dir: /etc/hyperledger/couchdb
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corpbrasilia/couchdb1:/etc/hyperledger/couchdb
+    ports:
+      # internal port changed to avoid conflict with other peer in other docker-compose.yml
+      - 7132:5984
+    networks:
+      - multiorg.net
+
+  corpbrasilia.peer1:
+    container_name: corpbrasilia.peer1
+    image: hyperledger/fabric-peer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer1.corpbrasilia.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer1/msp
+      - CORE_PEER_ADDRESS=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7134
+      - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:7134
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7135
+      - CORE_PEER_EVENTS_ADDRESS=0.0.0.0:7136
+      # Go profiling tools only in none production environment
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_COMMITTER_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # - CORE_PEER_CHAINCODE_MODE=dev
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_GOSSIP_ENDPOINT=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # Logging
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:7145
+      - CORE_METRICS_PROVIDER=prometheus
+      # For each historic key update, the historic value and associated transaction id and timestamp 
+      # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
+      - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=corpbrasilia.couchdb.peer1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corpbrasilia/peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corpbrasilia/rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 7134:7134
+      - 7135:7135
+      - 7136:7136
+      - 7145:7145
+    networks:
+      - multiorg.net
+    depends_on:
+      - corpbrasilia.peer1.couchdb
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+
+  corpbrasilia.peer1.cli:
+    container_name: corpbrasilia.peer1.cli
+    image: hyperledger/fabric-tools:2.3.2
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer1.corpbrasilia.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
+      - CORE_PEER_ADDRESS=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # Logging
+      - FABRIC_LOGGING_SPEC=debug:ledger,peer,couchdb=debug
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corpbrasilia/peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corpbrasilia/rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    networks:
+      - multiorg.net
+    depends_on:
+      - corpbrasilia.peer1
+    command: /bin/bash
+
+  # ==================================================================
+
+  corpbrasilia.peer2.couchdb:
+    container_name: corpbrasilia.peer2.couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_NETWORKID=multiorg.net
+      - COUCHDB_USER=admin-db
+      - COUCHDB_PASSWORD=admin-pwd
+    working_dir: /etc/hyperledger/couchdb
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run:/host/var/run
+      # Default root path
+      - ./corpbrasilia/couchdb2:/etc/hyperledger/couchdb
+    ports:
+      # internal port changed to avoid conflict with other peer in other docker-compose.yml
+      - 7232:5984
+    networks:
+      - multiorg.net
+
+  corpbrasilia.peer2:
+    container_name: corpbrasilia.peer2
+    image: hyperledger/fabric-peer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer2.corpbrasilia.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer2/msp
+      - CORE_PEER_ADDRESS=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7234
+      - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:7234
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7235
+      - CORE_PEER_EVENTS_ADDRESS=0.0.0.0:7236
+      # Go profiling tools only in none production environment
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_COMMITTER_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # - CORE_PEER_CHAINCODE_MODE=dev
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_GOSSIP_ENDPOINT=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # Logging
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:7245
+      - CORE_METRICS_PROVIDER=prometheus
+      # For each historic key update, the historic value and associated transaction id and timestamp 
+      # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
+      - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=corpbrasilia.couchdb.peer2:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer2/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corpbrasilia/peer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corpbrasilia/rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 7234:7234
+      - 7235:7235
+      - 7236:7236
+      - 7245:7245
+    networks:
+      - multiorg.net
+    depends_on:
+      - corpbrasilia.peer2.couchdb
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+
+  corpbrasilia.peer2.cli:
+    container_name: corpbrasilia.peer2.cli
+    image: hyperledger/fabric-tools:2.3.2
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer2.corpbrasilia.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
+      - CORE_PEER_ADDRESS=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      # Logging
+      - FABRIC_LOGGING_SPEC=debug:ledger,peer,couchdb=debug
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer2/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./corpbrasilia/peer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./corpbrasilia/rca:/etc/hyperledger/msp/
+      # Folder with channel create tx file
+      - ./configtx:/etc/hyperledger/configtx
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    networks:
+      - multiorg.net
+    depends_on:
+      - corpbrasilia.peer2
+    command: /bin/bash
+
+# ==================================================================
