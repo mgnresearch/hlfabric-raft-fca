@@ -5,6 +5,7 @@
 #
 
 echo "RCA Reset"
+sudo chown -R $(whoami) ../*
 
 rm -rf ./users/*
 rm -rf ./client/tls*
