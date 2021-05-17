@@ -32,7 +32,7 @@ version: "1.0"
 client:
   # Which organization does this application instance belong to? The value must be the name of an org
   # defined under "organizations"
-  organization: Anchova
+  organization: CorpBrasilia
 
   # Some SDKs support pluggable KV stores, the properties under "credentialStore"
   # are implementation specific
@@ -66,13 +66,14 @@ channels:
     # be "names" of orgs defined under "organizations/peers"
     #
     orderers:
-      - orderer-sea.blockchain.biz
+      - orderer1.corptrading.blockchain.biz
+      - orderer2.corptrading.blockchain.biz
 
     # Required. list of peers from participating orgs
     #
     peers:
       #
-      peer0-anchova.blockchain.biz:
+      peer1.corpbrasilia.blockchain.biz:
         # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must
         # have the chaincode installed. The app can also use this property to decide which peers
         # to send the chaincode install request. Default: true
@@ -92,19 +93,19 @@ channels:
         # Default: true
         eventSource: true
       
-      peer1-anchova.blockchain.biz:
+      peer2.corpbrasilia.blockchain.biz:
         endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
         eventSource: true
       
-      peer0-badejo.blockchain.biz:
+      peer1.corplisboa.blockchain.biz:
         endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
         eventSource: true
 
-      peer1-badejo.blockchain.biz:
+      peer2.corplisboa.blockchain.biz:
         endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
@@ -122,12 +123,12 @@ channels:
 #
 organizations:
   #
-  Anchova:
-    mspid: AnchovaMSP
+  CorpBrasilia:
+    mspid: CorpBrasiliaMSP
     peers:
-      - peer0-anchova.blockchain.biz
-      - peer1-anchova.blockchain.biz
-
+      - peer1.corpbrasilia.blockchain.biz
+      - peer2.corpbrasilia.blockchain.biz
+      
     # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
     # network. Typically certificates provisioning is done in a separate process outside of the
     # runtime network. Fabric-CA is a special certificate authority that provides a REST APIs for
@@ -135,25 +136,24 @@ organizations:
     # Fabric-CA servers.
     #
     certificateAuthorities:
-     - rca-anchova.blockchain.biz
+     - rca.corpbrasilia.blockchain.biz
     adminPrivateKey:
-      path: ../anchova/rca/users/admin/msp/keystore/key.pem
+      path: ../corpbrasilia/rca/users/admin/msp/keystore/key.pem
     signedCert:
-      path: ../anchova/rca/users/admin/msp/signcerts/cert.pem
+      path: ../corpbrasilia/rca/users/admin/msp/signcerts/cert.pem
 
   
-  Badejo:
-    mspid: BadejoMSP
+  CorpLisboa:
+    mspid: CorpLisboaMSP
     peers:
-      - peer0-badejo.blockchain.biz
-      - peer1-badejo.blockchain.biz
-    
+      - peer1.corplisboa.blockchain.biz
+      - peer2.corplisboa.blockchain.biz
     certificateAuthorities:
-     - rca-badejo.blockchain.biz
+     - rca.corplisboa.blockchain.biz
     adminPrivateKey:
-      path: ../badejo/rca/users/admin/msp/keystore/key.pem
+      path: ../corplisboa/rca/users/admin/msp/keystore/key.pem
     signedCert:
-      path: ../badejo/rca/users/admin/msp/signcerts/cert.pem
+      path: ../corplisboa/rca/users/admin/msp/signcerts/cert.pem
 
 #
 # List of orderers to send transaction and channel create/update requests to. For the time
@@ -167,68 +167,64 @@ organizations:
 
 orderers:
   #
-  orderer-sea.blockchain.biz:
-    url: grpcs://orderer-sea.blockchain.biz:7050
-
+  orderer1.corptrading.blockchain.biz:
+    url: grpcs://orderer1.corptrading.blockchain.biz:6130
     # these are standard properties defined by the gRPC library
     # they will be passed in as-is to gRPC client constructor
     grpcOptions:
-      ssl-target-name-override: orderer-sea.blockchain.biz
-
+      ssl-target-name-override: orderer1.corptrading.blockchain.biz
     tlsCACerts:
-      ptah: ../sea/rca/users/orderer/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+      ptah: ../corptrading/rca/users/orderer1/msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
 
+  orderer2.corptrading.blockchain.biz:
+    url: grpcs://orderer2.corptrading.blockchain.biz:6230
+    # these are standard properties defined by the gRPC library
+    # they will be passed in as-is to gRPC client constructor
+    grpcOptions:
+      ssl-target-name-override: orderer2.corptrading.blockchain.biz
+    tlsCACerts:
+      ptah: ../corptrading/rca/users/orderer2/msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+    
 #
 # List of peers to send various requests to, including endorsement, query
 # and event listener registration.
 #
 peers:
-  #
-  peer0-anchova.blockchain.biz:
+
+  peer1.corpbrasilia.blockchain.biz:
     # this URL is used to send endorsement and query requests
-    url: grpcs://peer0-anchova.blockchain.biz:7034
-
+    url: grpcs://peer1.corpbrasilia.blockchain.biz:7134
     grpcOptions:
-      ssl-target-name-override: peer0-anchova.blockchain.biz
+      ssl-target-name-override: peer1.corpbrasilia.blockchain.biz
       request-timeout: 120001
-
     tlsCACerts:
-      path: ../anchova/rca/users/peer0/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+      path: ../corpbrasilia/rca/users/peer1/msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
 
-  #
-  peer1-anchova.blockchain.biz:
+  peer2.corpbrasilia.blockchain.biz:
     # this URL is used to send endorsement and query requests
-    url: grpcs://peer1-anchova.blockchain.biz:7134
-
+    url: grpcs://peer2.corpbrasilia.blockchain.biz:7234
     grpcOptions:
-      ssl-target-name-override: peer1-anchova.blockchain.biz
-      request-timeout: 120001
-
+      ssl-target-name-override: peer2.corpbrasilia.blockchain.biz
+      request-timeout: 120002
     tlsCACerts:
-      path: ../anchova/rca/users/peer1/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+      path: ../corpbrasilia/rca/users/peer2/msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
 
-  #
-  peer0-badejo.blockchain.biz:
+  peer1.corplisboa.blockchain.biz:
     # this URL is used to send endorsement and query requests
-    url: grpcs://peer0-badejo.blockchain.biz:7044
-
+    url: grpcs://peer1.corplisboa.blockchain.biz:8134
     grpcOptions:
-      ssl-target-name-override: peer0-badejo.blockchain.biz
+      ssl-target-name-override: peer0.corplisboa.blockchain.biz
       request-timeout: 120001
-
     tlsCACerts:
-      path: ../badejo/rca/users/peer0/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+      path: ../corplisboa/rca/users/peer1/msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
 
-  #
-  peer1-badejo.blockchain.biz:
+  peer2.corplisboa.blockchain.biz:
     # this URL is used to send endorsement and query requests
-    url: grpcs://peer1-badejo.blockchain.biz:7144
-
+    url: grpcs://peer2.corplisboa.blockchain.biz:8234
     grpcOptions:
-      ssl-target-name-override: peer1-badejo.blockchain.biz
-      request-timeout: 120001
-
+      ssl-target-name-override: peer2.corplisboa.blockchain.biz
+      request-timeout: 120002
     tlsCACerts:
-      path: ../badejo/rca/users/peer1/msp/tlscacerts/tls-tlsr-ca-blockchain-biz-7010.pem
+      path: ../corplisboa/rca/users/peer2/msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
 
 # END
