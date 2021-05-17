@@ -24,7 +24,7 @@ General:
     ListenAddress: 0.0.0.0
 
     # Listen port: The port on which to bind to listen.
-    ListenPort: 6232  # Defaut is 7050
+    ListenPort: 6950  # Defaut is 7050
 
     # TLS: TLS settings for the GRPC server.
     TLS:
@@ -87,7 +87,7 @@ General:
     # GenesisMethod is set to "provisional". See the configtx.yaml file for the
     # descriptions of the available profiles. Ignored if GenesisMethod is set to
     # "file".
-    GenesisProfile: MultiOrgMSPSolo
+    GenesisProfile: MultiOrgOrdererEtcdRaft
 
     # Genesis file: The file containing the genesis block to use when
     # initializing the orderer system channel and GenesisMethod is set to
@@ -110,7 +110,7 @@ General:
     # https://golang.org/pkg/net/http/pprof
     Profile:
         Enabled: false
-        Address: 0.0.0.0:6022  # Defaut is 6060
+        Address: 0.0.0.0:6060  # Defaut is 6060
 
     # BCCSP configures the blockchain crypto service providers.
     BCCSP:
@@ -157,7 +157,7 @@ FileLedger:
 
     # The prefix to use when generating a ledger directory in temporary space.
     # Otherwise, this value is ignored.
-    Prefix: hlf-orderer2-corptrading
+    Prefix: hlf-orderer-corptrading
 
 ################################################################################
 #
@@ -306,7 +306,7 @@ Debug:
 ################################################################################
 Operations:
     # host and port for the operations server
-    ListenAddress: 0.0.0.0:6245  # Defaut is 7051
+    ListenAddress: 0.0.0.0:6945  # Defaut is 7051
 
     # TLS configuration for the operations endpoint
     TLS:
@@ -344,7 +344,7 @@ Metrics:
       Network: tcp
 
       # the statsd server address
-      Address: 127.0.0.1:6225
+      Address: 127.0.0.1:6125
 
       # The interval at which locally cached counters and gauges are pushed
       # to statsd; timings are pushed immediately
