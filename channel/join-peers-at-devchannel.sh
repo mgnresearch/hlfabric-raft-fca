@@ -12,7 +12,7 @@ echo $CORE_PEER_ADDRESS
 
 # Configure Env vars
 #--------------------------------------------------------------------------------
-export ORDERERNAME="orderer1.corptrading.blockchain.biz:6132"
+export ORDERERNAME="orderer1.corptrading.blockchain.biz:6130"
 export CHANNELNAME="devchannel"
 export CHANNELGENSBLOCK="/etc/hyperledger/configtx/devchannelgen.block"
 

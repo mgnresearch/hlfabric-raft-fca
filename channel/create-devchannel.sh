@@ -12,7 +12,7 @@ peer version
 
 # Configure Env vars
 #--------------------------------------------------------------------------------
-export ORDERERNAME="orderer1.corptrading.blockchain.biz:6132"
+export ORDERERNAME="orderer1.corptrading.blockchain.biz:6130"
 export CHANNELNAME="devchannel"
 export CONFIGTXGENSDEF="/etc/hyperledger/configtx/devchanneltrack.tx"
 export CHANNELGENSBLOCK="/etc/hyperledger/configtx/devchannelgen.block"
@@ -23,6 +23,7 @@ peer channel list
 
 # Remove previous channel block
 #--------------------------------------------------------------------------------
+ls $CHANNELGENSBLOCK
 rm -f $CHANNELGENSBLOCK
 
 # Sign the channel TX file
