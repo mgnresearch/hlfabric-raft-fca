@@ -1,7 +1,0 @@
-msp/*
-msp/*.*
-ca-cert.pem
-tls-cert.pem
-*.db
-IssuerPublicKey
-IssuerRevocationPublicKey
