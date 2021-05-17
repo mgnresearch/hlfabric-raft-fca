@@ -13,10 +13,10 @@ echo "Corp Trading"
 echo "Corp Brasilia"
 ./corpbrasilia/corpbrasilia-check-status.sh
 
-echo "Corp Lisboa"
-./corplisboa/corplisboa-check-status.sh
+# echo "Corp Lisboa"
+# ./corplisboa/corplisboa-check-status.sh
 
-echo "Corp Maputo"
-./corpmaputo/corpmaputo-check-status.sh
+# echo "Corp Maputo"
+# ./corpmaputo/corpmaputo-check-status.sh
 
 echo " --- END ---"

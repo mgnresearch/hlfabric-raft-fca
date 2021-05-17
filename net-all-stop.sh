@@ -5,23 +5,10 @@
 #
 echo "Blockchain network landing..."
 
-echo "Corp Maputo"
-./corpmaputo/corpmaputo-all-stop.sh
+docker-compose -f ./docker-compose.yaml down
 
-echo "Corp Lisboa"
-./corplisboa/corplisboa-all-stop.sh
-
-echo "Corp Brasilia"
-./corpbrasilia/corpbrasilia-all-stop.sh
-
-echo "Corp Trading"
-./corptrading/corptrading-all-stop.sh
-
-echo "TLS Control"
-./tlsrcontrol/tlsrcontrol-stop.sh
-
-echo "Sleep 4 seconds"
-sleep 4
+echo "Sleep 3 seconds"
+sleep 3
 
 # echo "Force shutdown"
 # docker rm --force $(docker ps -a --filter "name=ocean")
