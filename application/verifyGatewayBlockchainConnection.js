@@ -13,10 +13,10 @@
  
 //=================================================================
  // Specify userName for network access
- const userName = 'operator1';
+ const userName = 'user1';
  
  // organization MSP Id
- const orgMspId = 'AnchovaMSP';
+ const orgMspId = 'CorpBrasiliaMSP';
 
  // Network configuration
  const networkYAML = './gateway/connection-profile.yaml';
@@ -25,7 +25,7 @@
  const channelNAME = 'devchannel';
 
  // Peer name
- const peerName = 'peer0-anchova.blockchain.biz';
+ const peerName = 'peer1.corpbrasilia.blockchain.biz';
  //=================================================================
 
  // Main program function
@@ -38,9 +38,9 @@ async function main() {
 
 		// hard coded path to read cert and key of Admin from sample_3PeerNetwork
 		// check for private key file name, your generate command might have generated with a different name
-		var certPath = '../anchova/rca/users/' + userName + '/msp/signcerts/cert.pem';
+		var certPath = '../corpbrasilia/rca/users/' + userName + '/msp/signcerts/cert.pem';
 		var cert = fs.readFileSync(certPath).toString();
-		var keystorePath = '../anchova/rca/users/' + userName + '/msp/keystore/key.pem';
+		var keystorePath = '../corpbrasilia/rca/users/' + userName + '/msp/keystore/key.pem';
 		var keystore = fs.readFileSync(keystorePath).toString();
 
 		// Create an instance of the file system wallet
