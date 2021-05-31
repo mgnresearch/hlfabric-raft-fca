@@ -1,5 +1,0 @@
-logs/*
-logs/*.*
-ssl-certs/*.pem
-ssl-certs/*.csr
-walletstore/*.*

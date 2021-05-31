@@ -1,5 +1,0 @@
-users/*
-users/*.*
-client/tls/*.pem
-client/tls-ca/*.pem
-client/tls-root-cert/*.pem

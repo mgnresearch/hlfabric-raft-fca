@@ -1,8 +1,0 @@
-users/*
-users/*.*
-server/*.pem
-server/*.db
-server/*PublicKey
-server/msp/*
-client/*
-client/*.*
