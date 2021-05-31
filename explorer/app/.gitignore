@@ -1,0 +1,6 @@
+logs/*
+logs/*.*
+ssl-certs/*.json
+ssl-certs/*.pem
+ssl-certs/*.csr
+walletstore/*.*

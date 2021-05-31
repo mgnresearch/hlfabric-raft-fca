@@ -1,0 +1,10 @@
+{
+    "network-configs": {
+        "drink.net": {
+            "name": "drink.net",
+            "profile": "./connection-profile/config-net.json",
+            "enableAuthentication": false
+        }
+    },
+    "license": "Apache-2.0"
+}

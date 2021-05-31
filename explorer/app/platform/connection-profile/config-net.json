@@ -1,0 +1,103 @@
+{
+    "name": "drink.net",
+    "version": "1.0.0",
+    "client": {
+        "tlsEnable": true,
+        "adminCredential": {
+            "id": "explorer-admin",
+            "password": "952ef16740991a31cc1582dd"
+        },
+        "enableAuthentication": true,
+        "organization": "Coffee",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "3001",
+                    "eventHub": "3002",
+                    "eventReg": "3004"
+                },
+                "orderer": "3006"
+            },
+            "options": {
+                "grpc.keepalive_timeout_ms": "12005"
+            }
+        }
+    },
+    "channels": {
+        "devchannel": {
+            "peers": {
+                "peer1.coffee.blockchain.biz": {},                
+                "peer0.coffee.blockchain.biz": {}
+            },
+            "connection": {
+                "timeout": {
+                    "peer": {
+                        "endorser": "3001",
+                        "eventHub": "3002",
+                        "eventReg": "3004"
+                    },
+                    "orderer": "3006"
+                },
+                "options": {
+                    "grpc.keepalive_timeout_ms": "12006"
+                }
+            }
+        }
+    },
+    "organizations": {
+        "Coffee": {
+            "mspid": "CoffeeMSP",
+            "peers": ["peer1.coffee.blockchain.biz","peer0.coffee.blockchain.biz"],
+            "adminPrivateKey": {
+                "path": "/etc/hyperledger/msp/users/admin/msp/keystore/key.pem"
+            },
+            "signedCert": {
+                "path": "/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem"
+            }
+        }
+    },
+    "peers": {
+        "peer1.coffee.blockchain.biz": {
+          "url": "grpcs://peer1.coffee.blockchain.biz:7234",
+          "eventUrl": "grpcs://peer1.coffee.blockchain.biz:7236",
+          "grpcOptions": {
+            "ssl-target-name-override": "peer1.coffee.blockchain.biz",
+            "hostnameOverride": "peer1.coffee.blockchain.biz",
+            "grpc.keepalive_timeout_ms": "21005"
+          },
+          "tlsCACerts": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem"
+          },
+          "signCerts": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/signcerts/cert.pem"
+          },
+          "keystore": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/keystore/key.pem"
+          },
+          "CACerts": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/cacerts/rca-coffee-blockchain-biz-7005.pem"
+          }
+        },
+        "peer0.coffee.blockchain.biz": {
+          "url": "grpcs://peer0.coffee.blockchain.biz:7134",
+          "eventUrl": "grpcs://peer0.coffee.blockchain.biz:7136",
+          "grpcOptions": {
+            "ssl-target-name-override": "peer0.coffee.blockchain.biz",
+            "hostnameOverride": "peer0.coffee.blockchain.biz",
+            "grpc.keepalive_timeout_ms": "21005"
+          },
+          "tlsCACerts": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem"
+          },
+          "signCerts": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/signcerts/cert.pem"
+          },
+          "keystore": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/keystore/key.pem"
+          },
+          "CACerts": {
+            "path": "/etc/hyperledger/msp/users/user1/msp/cacerts/rca-coffee-blockchain-biz-7005.pem"
+          }
+        }
+    }
+}
