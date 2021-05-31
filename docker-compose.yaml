@@ -4,19 +4,26 @@
 #
 version: '3.5'
 
+volumes:
+   trading.orderer0:
+   trading.orderer1:
+   trading.orderer2:
+
 networks:
-  multiorg.net:
-    name: multiorg.blockchain
+  drink.net:
+    name: drink.blockchain
 
 services:
 
 # ==================================================================
-  corptrading.orderer1:
-    container_name: corptrading.orderer1
+
+  trading.orderer0:
+    container_name: trading.orderer0
     image: hyperledger/fabric-orderer:1.4.9
+    hostname: orderer0.trading.blockchain.biz
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corptrading.net
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
       - FABRIC_LOGGING_SPEC=info
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
@@ -24,62 +31,64 @@ services:
       - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
       - ORDERER_GENERAL_LOGLEVEL=info
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=6950
+      - ORDERER_GENERAL_LISTENPORT=7050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
-      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
-      - ORDERER_GENERAL_LOCALMSPID=CorpTradingMSP
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TradingMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
       - ORDERER_GENERAL_TLS_ENABLED=true
       - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
-      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
       - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
       - GODEBUG=netdns=go
       # Operations
-      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:6945
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:7051
       - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
       - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
       # Additional ORDERER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corptrading-tls-cert.pem
-      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-corptrading-ca-cert.pem
-      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
-      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-trading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-trading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-trading-blockchain-biz-6005.pem
       # Ordering CLuster
       - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
       - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
-      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
-      - ORDERER_FILELEDGER_PREFIX=hlf-orderer1-corptrading
-      - ORDERER_HOST=orderer1.corptrading.blockchain.biz
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer0-trading
+      - ORDERER_HOST=orderer0.trading.blockchain.biz
     working_dir: /etc/hyperledger/fabric
     volumes:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corptrading/orderer1:/etc/hyperledger/fabric
+      - ./trading/orderer0:/etc/hyperledger/fabric
       # Map the folder to root of Fabric CA crypto assets
-      - ./corptrading/rca/client:/etc/hyperledger/msp/client
-      - ./corptrading/rca/users/admin:/etc/hyperledger/msp/users/admin
-      - ./corptrading/rca/users/orderer1:/etc/hyperledger/msp/users/orderer
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
+      - ./trading/rca/client:/etc/hyperledger/msp/client
+      - ./trading/rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./trading/rca/users/orderer0:/etc/hyperledger/msp/users/orderer
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
       # For chaincode and application
       - ./application:/etc/hyperledger/application
       - ./chaincode:/etc/hyperledger/chaincode
     ports:
-      - 6130:6950
-      - 6145:6945
+      - 6130:7050
+      - 6145:7051
     networks:
-      - multiorg.net
+      - drink.net
     command: orderer
 
-  corptrading.orderer2:
-    container_name: corptrading.orderer2
+  trading.orderer1:
+    container_name: trading.orderer1
     image: hyperledger/fabric-orderer:1.4.9
+    hostname: orderer1.trading.blockchain.biz
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corptrading.net
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
       - FABRIC_LOGGING_SPEC=info
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
@@ -87,131 +96,139 @@ services:
       - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
       - ORDERER_GENERAL_LOGLEVEL=info
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=6950
+      - ORDERER_GENERAL_LISTENPORT=7050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
-      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
-      - ORDERER_GENERAL_LOCALMSPID=CorpTradingMSP
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TradingMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
       - ORDERER_GENERAL_TLS_ENABLED=true
       - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
-      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
       - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
       - GODEBUG=netdns=go
       # Operations
-      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:6945
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:7051
       - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
       - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
       # Additional ORDERER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corptrading-tls-cert.pem
-      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-corptrading-ca-cert.pem
-      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
-      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-trading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-trading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-trading-blockchain-biz-6005.pem
       # Ordering CLuster
       - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
       - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
-      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
-      - ORDERER_FILELEDGER_PREFIX=hlf-orderer2-corptrading
-      - ORDERER_HOST=orderer2.corptrading.blockchain.biz
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer1-trading
+      - ORDERER_HOST=orderer1.trading.blockchain.biz
     working_dir: /etc/hyperledger/fabric
     volumes:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corptrading/orderer2:/etc/hyperledger/fabric
+      - ./trading/orderer1:/etc/hyperledger/fabric
       # Map the folder to root of Fabric CA crypto assets
-      - ./corptrading/rca/client:/etc/hyperledger/msp/client
-      - ./corptrading/rca/users/admin:/etc/hyperledger/msp/users/admin
-      - ./corptrading/rca/users/orderer2:/etc/hyperledger/msp/users/orderer
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
+      - ./trading/rca/client:/etc/hyperledger/msp/client
+      - ./trading/rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./trading/rca/users/orderer1:/etc/hyperledger/msp/users/orderer
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
       # For chaincode and application
       - ./application:/etc/hyperledger/application
       - ./chaincode:/etc/hyperledger/chaincode
     ports:
-      - 6230:6950
-      - 6245:6945
+      - 6230:7050
+      - 6245:7051
     networks:
-      - multiorg.net
+      - drink.net
+    depends_on:
+      - trading.orderer0
+    command: orderer    
+
+  trading.orderer2:
+    container_name: trading.orderer2
+    image: hyperledger/fabric-orderer:1.4.9
+    hostname: orderer2.trading.blockchain.biz
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:7051
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-trading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-trading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer2-trading
+      - ORDERER_HOST=orderer2.trading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./trading/orderer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./trading/rca/client:/etc/hyperledger/msp/client
+      - ./trading/rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./trading/rca/users/orderer2:/etc/hyperledger/msp/users/orderer
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6330:7050
+      - 6345:7051
+    networks:
+      - drink.net
+    depends_on:
+      - trading.orderer0
     command: orderer
 
-  corptrading.orderer3:
-    container_name: corptrading.orderer3
-    image: hyperledger/fabric-orderer:1.4.9
-    environment:
-      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corptrading.net
-      - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - FABRIC_LOGGING_SPEC=info
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
-      - ORDERER_HOME=/etc/hyperledger/fabric
-      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
-      - ORDERER_GENERAL_LOGLEVEL=info
-      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=6950
-      - ORDERER_GENERAL_GENESISMETHOD=file
-      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
-      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
-      - ORDERER_GENERAL_LOCALMSPID=CorpTradingMSP
-      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
-      - ORDERER_GENERAL_TLS_ENABLED=true
-      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
-      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
-      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
-      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
-      - GODEBUG=netdns=go
-      # Operations
-      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:6945
-      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
-      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
-      # Additional ORDERER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corptrading-tls-cert.pem
-      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-corptrading-ca-cert.pem
-      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
-      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-corptrading-blockchain-biz-6005.pem
-      # Ordering CLuster
-      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
-      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
-      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem]
-      - ORDERER_FILELEDGER_PREFIX=hlf-orderer3-corptrading
-      - ORDERER_HOST=orderer3.corptrading.blockchain.biz
-    working_dir: /etc/hyperledger/fabric
-    volumes:
-      # VM docker stream folder mapping
-      - /var/run/:/host/var/run/
-      # Default root path
-      - ./corptrading/orderer3:/etc/hyperledger/fabric
-      # Map the folder to root of Fabric CA crypto assets
-      - ./corptrading/rca/client:/etc/hyperledger/msp/client
-      - ./corptrading/rca/users/admin:/etc/hyperledger/msp/users/admin
-      - ./corptrading/rca/users/orderer3:/etc/hyperledger/msp/users/orderer
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
-      # For chaincode and application
-      - ./application:/etc/hyperledger/application
-      - ./chaincode:/etc/hyperledger/chaincode
-    ports:
-      - 6330:6950
-      - 6345:6945
-    networks:
-      - multiorg.net
-    command: orderer
-  
 # ==================================================================
 
-  corpbrasilia.peer1.couchdb:
-    container_name: corpbrasilia.peer1.couchdb
+  coffee.couchdb0:
+    container_name: coffee.couchdb0
     image: hyperledger/fabric-couchdb:0.4.22
+    hostname: couchdb0.coffee.blockchain.biz
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
     # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_NETWORKID=drink.net
       - COUCHDB_USER=admin-db
       - COUCHDB_PASSWORD=admin-pwd
     working_dir: /etc/hyperledger/couchdb
@@ -219,28 +236,29 @@ services:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corpbrasilia/couchdb1:/etc/hyperledger/couchdb
+      - ./coffee/couchdb0:/etc/hyperledger/couchdb
     ports:
       # internal port changed to avoid conflict with other peer in other docker-compose.yml
       - 7132:5984
     networks:
-      - multiorg.net
+      - drink.net
 
-  corpbrasilia.peer1:
-    container_name: corpbrasilia.peer1
+  coffee.peer0:
+    container_name: coffee.peer0
     image: hyperledger/fabric-peer:1.4.9
+    hostname: peer0.coffee.blockchain.biz
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
-      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_NETWORKID=drink.net
       - CORE_PEER_ADDRESSAUTODETECT=false
-      - CORE_PEER_ID=peer1.corpbrasilia.blockchain.biz
-      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer1/msp
-      - CORE_PEER_ADDRESS=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_ID=peer0.coffee.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CoffeeMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer0/msp
+      - CORE_PEER_ADDRESS=peer0.coffee.blockchain.biz:7134
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7134
       - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:7134
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7135
@@ -249,15 +267,15 @@ services:
       - CORE_PEER_PROFILE_ENABLED=false
       - CORE_PEER_COMMITTER_ENABLED=true
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
       # - CORE_PEER_CHAINCODE_MODE=dev
-      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.corpbrasilia.blockchain.biz:7134
-      - CORE_PEER_GOSSIP_ENDPOINT=peer1.corpbrasilia.blockchain.biz:7134
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.corpbrasilia.blockchain.biz:7134
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.coffee.blockchain.biz:7134
+      - CORE_PEER_GOSSIP_ENDPOINT=peer0.coffee.blockchain.biz:7134
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.coffee.blockchain.biz:7134
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
-      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
       # Logging
       - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=info
@@ -282,24 +300,25 @@ services:
       # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
       - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=corpbrasilia.couchdb.peer1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.coffee.blockchain.biz:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
       # Additional PEER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
-      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-coffee-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer0/msp/cacerts/rca-coffee-blockchain-biz-7005.pem
       - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
     working_dir: /etc/hyperledger/fabric
     volumes:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corpbrasilia/peer1:/etc/hyperledger/fabric
+      - ./coffee/peer0:/etc/hyperledger/fabric
       # Map the folder to root of Fabric CA crypto assets
-      - ./corpbrasilia/rca:/etc/hyperledger/msp/
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
+      - ./coffee/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
       # For chaincode and application
       - ./application:/etc/hyperledger/application
       - ./chaincode:/etc/hyperledger/chaincode
@@ -309,36 +328,36 @@ services:
       - 7136:7136
       - 7145:7145
     networks:
-      - multiorg.net
+      - drink.net
     depends_on:
-      - corpbrasilia.peer1.couchdb
+      - coffee.couchdb0
+      - trading.orderer0
     command: peer node start
-    # command: peer node start --peer-chaincodedev=true
 
-  corpbrasilia.peer1.cli:
-    container_name: corpbrasilia.peer1.cli
-    image: hyperledger/fabric-tools:2.3.2
+  coffee.peer0.cli:
+    container_name: coffee.peer0.cli
+    image: hyperledger/fabric-tools:1.4.12
     tty: true
     stdin_open: true
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
-      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
       - FABRIC_LOGGING_SPEC=info
-      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_NETWORKID=drink.net
       - CORE_PEER_ADDRESSAUTODETECT=false
-      - CORE_PEER_ID=peer1.corpbrasilia.blockchain.biz
-      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
+      - CORE_PEER_ID=peer0.coffee.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CoffeeMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
-      - CORE_PEER_ADDRESS=peer1.corpbrasilia.blockchain.biz:7134
+      - CORE_PEER_ADDRESS=peer0.coffee.blockchain.biz:7134
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
       # Logging
-      - FABRIC_LOGGING_SPEC=debug:ledger,peer,couchdb=debug
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=debug
       # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
       # - CORE_LOGGING_COUCHDB=info
       # - CORE_LOGGING_CAUTHDSL=info
@@ -349,46 +368,47 @@ services:
       # - CORE_LOGGING_MSP=info
       # - CORE_LOGGING_PEER=info
       # - CORE_LOGGING_POLICIES=info
-      - CORE_CHAINCODE_LOGGING_LEVEL=info
-      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=debug
+      - CORE_CHAINCODE_LOGGING_SHIM=debug
       - GRPC_GO_LOG_VERBOSITY_LEVEL=99
       - GRPC_GO_LOG_SEVERITY_LEVEL=info
       # Additional PEER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
-      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-coffee-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer0/msp/cacerts/rca-coffee-blockchain-biz-7005.pem
       - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
     working_dir: /etc/hyperledger/fabric
     volumes:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corpbrasilia/peer1:/etc/hyperledger/fabric
+      - ./coffee/peer0:/etc/hyperledger/fabric
       # Map the folder to root of Fabric CA crypto assets
-      - ./corpbrasilia/rca:/etc/hyperledger/msp/
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
+      - ./coffee/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
       # For chaincode and application
       - ./application:/etc/hyperledger/application
       - ./chaincode:/etc/hyperledger/chaincode
     networks:
-      - multiorg.net
+      - drink.net
     depends_on:
-      - corpbrasilia.peer1
+      - coffee.peer0
     command: /bin/bash
 
-  # ==================================================================
 
-  corpbrasilia.peer2.couchdb:
-    container_name: corpbrasilia.peer2.couchdb
+  coffee.couchdb1:
+    container_name: coffee.couchdb1
     image: hyperledger/fabric-couchdb:0.4.22
+    hostname: couchdb1.coffee.blockchain.biz
     # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
-    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admicouchdb1n Party" mode.
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_NETWORKID=drink.net
       - COUCHDB_USER=admin-db
       - COUCHDB_PASSWORD=admin-pwd
     working_dir: /etc/hyperledger/couchdb
@@ -396,28 +416,29 @@ services:
       # VM docker stream folder mapping
       - /var/run:/host/var/run
       # Default root path
-      - ./corpbrasilia/couchdb2:/etc/hyperledger/couchdb
+      - ./coffee/couchdb1:/etc/hyperledger/couchdb
     ports:
       # internal port changed to avoid conflict with other peer in other docker-compose.yml
       - 7232:5984
     networks:
-      - multiorg.net
+      - drink.net
 
-  corpbrasilia.peer2:
-    container_name: corpbrasilia.peer2
+  coffee.peer1:
+    container_name: coffee.peer1
     image: hyperledger/fabric-peer:1.4.9
+    hostname: peer1.coffee.blockchain.biz
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
-      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_NETWORKID=drink.net
       - CORE_PEER_ADDRESSAUTODETECT=false
-      - CORE_PEER_ID=peer2.corpbrasilia.blockchain.biz
-      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer2/msp
-      - CORE_PEER_ADDRESS=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_ID=peer1.coffee.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CoffeeMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer1/msp
+      - CORE_PEER_ADDRESS=peer1.coffee.blockchain.biz:7234
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7234
       - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:7234
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7235
@@ -426,15 +447,15 @@ services:
       - CORE_PEER_PROFILE_ENABLED=false
       - CORE_PEER_COMMITTER_ENABLED=true
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/signcerts/cert.pem
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/keystore/key.pem
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
       # - CORE_PEER_CHAINCODE_MODE=dev
-      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer2.corpbrasilia.blockchain.biz:7234
-      - CORE_PEER_GOSSIP_ENDPOINT=peer2.corpbrasilia.blockchain.biz:7234
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.corpbrasilia.blockchain.biz:7234
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.coffee.blockchain.biz:7234
+      - CORE_PEER_GOSSIP_ENDPOINT=peer1.coffee.blockchain.biz:7234
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.coffee.blockchain.biz:7234
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
-      - CORE_PEER_GOSSIP_ORGLEADER=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
       # Logging
       - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=info
@@ -459,24 +480,25 @@ services:
       # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
       - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=corpbrasilia.couchdb.peer2:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.coffee.blockchain.biz:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
       # Additional PEER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
-      - PEER_CACERT=/etc/hyperledger/msp/users/peer2/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-coffee-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-coffee-blockchain-biz-7005.pem
       - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
     working_dir: /etc/hyperledger/fabric
     volumes:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corpbrasilia/peer2:/etc/hyperledger/fabric
+      - ./coffee/peer1:/etc/hyperledger/fabric
       # Map the folder to root of Fabric CA crypto assets
-      - ./corpbrasilia/rca:/etc/hyperledger/msp/
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
+      - ./coffee/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
       # For chaincode and application
       - ./application:/etc/hyperledger/application
       - ./chaincode:/etc/hyperledger/chaincode
@@ -486,36 +508,139 @@ services:
       - 7236:7236
       - 7245:7245
     networks:
-      - multiorg.net
+      - drink.net
     depends_on:
-      - corpbrasilia.peer2.couchdb
+      - coffee.couchdb1
+      - trading.orderer0
     command: peer node start
     # command: peer node start --peer-chaincodedev=true
 
-  corpbrasilia.peer2.cli:
-    container_name: corpbrasilia.peer2.cli
-    image: hyperledger/fabric-tools:2.3.2
+  coffee.peer1.cli:
+    container_name: coffee.peer1.cli
+    image: hyperledger/fabric-tools:1.4.12
     tty: true
     stdin_open: true
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=corpbrasilia.blockchain
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/
-      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
       - FABRIC_LOGGING_SPEC=info
-      - CORE_PEER_NETWORKID=multiorg.net
+      - CORE_PEER_NETWORKID=drink.net
       - CORE_PEER_ADDRESSAUTODETECT=false
-      - CORE_PEER_ID=peer2.corpbrasilia.blockchain.biz
-      - CORE_PEER_LOCALMSPID=CorpBrasiliaMSP
+      - CORE_PEER_ID=peer1.coffee.blockchain.biz
+      - CORE_PEER_LOCALMSPID=CoffeeMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
-      - CORE_PEER_ADDRESS=peer2.corpbrasilia.blockchain.biz:7234
+      - CORE_PEER_ADDRESS=peer1.coffee.blockchain.biz:7234
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/signcerts/cert.pem
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/keystore/key.pem
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer2/tls-msp/tlscacerts/tls-ca-tlsrcontrol-blockchain-biz-5005.pem
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
       # Logging
-      - FABRIC_LOGGING_SPEC=debug:ledger,peer,couchdb=debug
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=debug
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=debug
+      - CORE_CHAINCODE_LOGGING_SHIM=debug
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-coffee-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-coffee-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./coffee/peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./coffee/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    networks:
+      - drink.net
+    depends_on:
+      - coffee.peer1
+    command: /bin/bash
+
+# ==================================================================
+
+  juice.couchdb0:
+    container_name: juice.couchdb0
+    image: hyperledger/fabric-couchdb:0.4.22
+    hostname: couchdb0.juice.blockchain.biz
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_NETWORKID=drink.net
+      - COUCHDB_USER=admin-db
+      - COUCHDB_PASSWORD=admin-pwd
+    working_dir: /etc/hyperledger/couchdb
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./juice/couchdb0:/etc/hyperledger/couchdb
+    ports:
+      # internal port changed to avoid conflict with other peer in other docker-compose.yml
+      - 8132:5984
+    networks:
+      - drink.net
+
+  juice.peer0:
+    container_name: juice.peer0
+    image: hyperledger/fabric-peer:1.4.9
+    hostname: peer0.juice.blockchain.biz
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - CORE_PEER_NETWORKID=drink.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer0.juice.blockchain.biz
+      - CORE_PEER_LOCALMSPID=JuiceMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer0/msp
+      - CORE_PEER_ADDRESS=peer0.juice.blockchain.biz:8134
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8134
+      - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:8134
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8135
+      - CORE_PEER_EVENTS_ADDRESS=0.0.0.0:8136
+      # Go profiling tools only in none production environment
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_COMMITTER_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
+      # - CORE_PEER_CHAINCODE_MODE=dev
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.juice.blockchain.biz:8134
+      - CORE_PEER_GOSSIP_ENDPOINT=peer0.juice.blockchain.biz:8134
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.juice.blockchain.biz:8134
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # Logging
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=info
       # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
       # - CORE_LOGGING_COUCHDB=info
       # - CORE_LOGGING_CAUTHDSL=info
@@ -530,28 +655,433 @@ services:
       - CORE_CHAINCODE_LOGGING_SHIM=info
       - GRPC_GO_LOG_VERBOSITY_LEVEL=99
       - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:8145
+      - CORE_METRICS_PROVIDER=prometheus
+      # For each historic key update, the historic value and associated transaction id and timestamp 
+      # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
+      - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.juice.blockchain.biz:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
       # Additional PEER vars to support configs at runtime
-      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/ca-tlsrcontrol-tls-cert.pem
-      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-corpbrasilia-tls-cert.pem
-      - PEER_CACERT=/etc/hyperledger/msp/users/peer2/msp/cacerts/rca-corpbrasilia-blockchain-biz-7005.pem
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-juice-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer0/msp/cacerts/rca-juice-blockchain-biz-8005.pem
       - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
     working_dir: /etc/hyperledger/fabric
     volumes:
       # VM docker stream folder mapping
       - /var/run/:/host/var/run/
       # Default root path
-      - ./corpbrasilia/peer2:/etc/hyperledger/fabric
+      - ./juice/peer0:/etc/hyperledger/fabric
       # Map the folder to root of Fabric CA crypto assets
-      - ./corpbrasilia/rca:/etc/hyperledger/msp/
-      # Folder with channel create tx file
-      - ./configtx:/etc/hyperledger/configtx
+      - ./juice/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 8134:8134
+      - 8135:8135
+      - 8136:8136
+      - 8145:8145
+    networks:
+      - drink.net
+    depends_on:
+      - juice.couchdb0
+      - trading.orderer0
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+
+  juice.peer0.cli:
+    container_name: juice.peer0.cli
+    image: hyperledger/fabric-tools:1.4.12
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_NETWORKID=drink.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer0.juice.blockchain.biz
+      - CORE_PEER_LOCALMSPID=JuiceMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
+      - CORE_PEER_ADDRESS=peer0.juice.blockchain.biz:8134
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer0/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
+      # Logging
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=debug
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=debug
+      - CORE_CHAINCODE_LOGGING_SHIM=debug
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-juice-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer0/msp/cacerts/rca-juice-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./juice/peer0:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./juice/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
       # For chaincode and application
       - ./application:/etc/hyperledger/application
       - ./chaincode:/etc/hyperledger/chaincode
     networks:
-      - multiorg.net
+      - drink.net
     depends_on:
-      - corpbrasilia.peer2
+      - juice.peer0
+    command: /bin/bash
+
+
+  juice.couchdb1:
+    container_name: juice.couchdb1
+    image: hyperledger/fabric-couchdb:0.4.22
+    hostname: couchdb1.juice.blockchain.biz
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admicouchdb1n Party" mode.
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_NETWORKID=drink.net
+      - COUCHDB_USER=admin-db
+      - COUCHDB_PASSWORD=admin-pwd
+    working_dir: /etc/hyperledger/couchdb
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run:/host/var/run
+      # Default root path
+      - ./juice/couchdb1:/etc/hyperledger/couchdb
+    ports:
+      # internal port changed to avoid conflict with other peer in other docker-compose.yml
+      - 8232:5984
+    networks:
+      - drink.net
+
+  juice.peer1:
+    container_name: juice.peer1
+    image: hyperledger/fabric-peer:1.4.9
+    hostname: peer1.juice.blockchain.biz
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - CORE_PEER_NETWORKID=drink.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer1.juice.blockchain.biz
+      - CORE_PEER_LOCALMSPID=JuiceMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/peer1/msp
+      - CORE_PEER_ADDRESS=peer1.juice.blockchain.biz:8234
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8234
+      - CORE_PEER_ADMINSERVICE_LISTENADDRESS=0.0.0.0:8234
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8235
+      - CORE_PEER_EVENTS_ADDRESS=0.0.0.0:8236
+      # Go profiling tools only in none production environment
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_COMMITTER_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
+      # - CORE_PEER_CHAINCODE_MODE=dev
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.juice.blockchain.biz:8234
+      - CORE_PEER_GOSSIP_ENDPOINT=peer1.juice.blockchain.biz:8234
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.juice.blockchain.biz:8234
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # Logging
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_CHAINCODE_LOGGING_SHIM=info
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:8245
+      - CORE_METRICS_PROVIDER=prometheus
+      # For each historic key update, the historic value and associated transaction id and timestamp 
+      # are stored in history database. See Class: ChaincodeStub and method <async> getHistoryForKey(key)
+      - CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.juice.blockchain.biz:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin-db
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin-pwd
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-juice-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-juice-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./juice/peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./juice/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 8234:8234
+      - 8235:8235
+      - 8236:8236
+      - 8245:8245
+    networks:
+      - drink.net
+    depends_on:
+      - juice.couchdb1
+      - trading.orderer0
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+
+  juice.peer1.cli:
+    container_name: juice.peer1.cli
+    image: hyperledger/fabric-tools:1.4.12
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - CORE_PEER_FILESYSTEMPATH=/etc/hyperledger/fabric/ledger
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_NETWORKID=drink.net
+      - CORE_PEER_ADDRESSAUTODETECT=false
+      - CORE_PEER_ID=peer1.juice.blockchain.biz
+      - CORE_PEER_LOCALMSPID=JuiceMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/admin/msp
+      - CORE_PEER_ADDRESS=peer1.juice.blockchain.biz:8234
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/users/peer1/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem
+      # Logging
+      - FABRIC_LOGGING_SPEC=info:ledger,peer,couchdb=debug
+      # - CORE_LOGGING_LEVEL=info:ledger,peer,couchdb=info
+      # - CORE_LOGGING_COUCHDB=info
+      # - CORE_LOGGING_CAUTHDSL=info
+      # - CORE_LOGGING_GOSSIP=info
+      # - CORE_LOGGING_GRPC=info
+      # - CORE_LOGGING_KVLEDGER=info
+      # - CORE_LOGGING_LEDGER=info
+      # - CORE_LOGGING_MSP=info
+      # - CORE_LOGGING_PEER=info
+      # - CORE_LOGGING_POLICIES=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=debug
+      - CORE_CHAINCODE_LOGGING_SHIM=debug
+      - GRPC_GO_LOG_VERBOSITY_LEVEL=99
+      - GRPC_GO_LOG_SEVERITY_LEVEL=info
+      # Additional PEER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-juice-tls-cert.pem
+      - PEER_CACERT=/etc/hyperledger/msp/users/peer1/msp/cacerts/rca-juice-blockchain-biz-8005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/admin/msp/signcerts/cert.pem
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./juice/peer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./juice/rca:/etc/hyperledger/msp/
+      # Folder with block channel config and tx file
+      - ./config:/etc/hyperledger/config
+      - ./channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ./application:/etc/hyperledger/application
+      - ./chaincode:/etc/hyperledger/chaincode
+    networks:
+      - drink.net
+    depends_on:
+      - juice.peer1
     command: /bin/bash
 
 # ==================================================================
+
+  explorer.db:
+    container_name: explorer.db
+    image: hyperledger/explorer-db:1.1.5
+    hostname: db.explorer.blockchain.biz
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - DATABASE_ADDRESS=db.explorer.blockchain.biz:5432
+      - DATABASE_HOST=db.explorer.blockchain.biz
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hlexdb-admin
+      - DATABASE_PASSWORD=explorerdb-pwd  
+      - DATABASE_TYPE=postgresql
+      - GOPATH=/opt/gopath
+      - TZ=America/Sao_Paulo
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to exchange data
+      - ./explorer/exchangedata:/etc/hyperledger/exchangedata
+      # Explorer DB mount path
+      - ./explorer/db/postgresql/data:/var/lib/postgresql/data
+    networks:
+      - drink.net
+    healthcheck:
+      test: "pg_isready -h localhost -p 5432 -q -U postgres"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  explorer.app:
+    container_name: explorer.app
+    image: hyperledger/explorer:1.1.5
+    hostname: app.explorer.blockchain.biz
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CONNECTION_PROFILE_NETWORK=/opt/explorer/app/platform/fabric/connection-profile/config-net.json
+      - CONNECTION_PROFILE_PATH=/opt/explorer/app/platform/fabric/config.json
+      - DATABASE_ADDRESS=db.explorer.blockchain.biz:5432
+      - DATABASE_HOST=db.explorer.blockchain.biz
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hlexdb-admin
+      - DATABASE_PASSWD=explorerdb-pwd
+      - DATABASE_TYPE=postgresql
+      - EXPLORER_ADDRESS=app.explorer.blockchain.biz:8080
+      - EXPLORER_LISTENADDRESS=0.0.0.0:8080
+      - EXPLORER_LOCALMSPID=CoffeeMSP
+      - EXPLORER_NETWORKID=explorer.net
+      - EXPLORER_USERNAME=explorer-admin
+      # - EXPLORER_PASSWORD=explorer-pwd
+      - LOG_LEVEL_APP=debug
+      - LOG_LEVEL_DB=info
+      - LOG_LEVEL_CONSOLE=info
+      - LOG_CONSOLE_STDOUT=true
+      - DISCOVERY_AS_LOCALHOST=false
+      - GOPATH=/opt/gopath
+      - TZ=America/Sao_Paulo
+      # Additional USER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-coffee-tls-cert.pem
+      - USER_CACERT=/etc/hyperledger/msp/users/user1/msp/cacerts/rca-coffee-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/user1/admincerts/coffee-admin-cert.pem
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
+      - ./explorer/rca:/etc/hyperledger/msp/
+      # Map the folder to exchange data
+      - ./explorer/exchangedata:/etc/hyperledger/exchangedata
+      # Explorer APP mount path
+      - ./explorer/app/explorerconfig.json:/opt/explorer/app/explorerconfig.json
+      - ./explorer/app/config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./explorer/app/logs:/opt/explorer/logs
+      - ./explorer/app/platform/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ./explorer/app/ssl-certs:/opt/explorer/ssl-certs
+      - ./explorer/app/walletstore:/opt/explorer/wallet
+    ports:
+      - 8080:8080
+    networks:
+      - drink.net
+    depends_on:
+      - explorer.db
+      - trading.orderer0
+
+  explorer.cli:
+    container_name: explorer.cli
+    image: hyperledger/fabric-tools:1.4.12
+    tty: true
+    stdin_open: true
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=drink.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CONNECTION_PROFILE_NETWORK=/opt/explorer/app/platform/fabric/connection-profile/drink-net.json
+      - CONNECTION_PROFILE_PATH=/opt/explorer/app/platform/fabric/config.json
+      - DATABASE_ADDRESS=db.explorer.blockchain.biz:5432
+      - DATABASE_HOST=db.explorer.blockchain.biz
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hlexdb-admin
+      - DATABASE_PASSWD=explorerdb-pwd
+      - DATABASE_TYPE=postgresql
+      - EXPLORER_ADDRESS=app.explorer.blockchain.biz:8080
+      - EXPLORER_LISTENADDRESS=0.0.0.0:8080
+      - EXPLORER_LOCALMSPID=CoffeeMSP
+      - EXPLORER_NETWORKID=explorer.net
+      - EXPLORER_USERNAME=explorer-admin
+      - EXPLORER_PASSWORD=explorer-pwd
+      - LOG_LEVEL_APP=debug
+      - LOG_LEVEL_DB=info
+      - LOG_LEVEL_CONSOLE=info
+      - LOG_CONSOLE_STDOUT=true
+      - DISCOVERY_AS_LOCALHOST=false
+      - GOPATH=/opt/gopath
+      - TZ=America/Sao_Paulo
+      # Additional USER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-coffee-tls-cert.pem
+      - USER_CACERT=/etc/hyperledger/msp/users/user1/msp/cacerts/rca-coffee-blockchain-biz-7005.pem
+      - ADMIN_SIGNCERTS=/etc/hyperledger/msp/users/user1/admincerts/coffee-admin-cert.pem
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
+      - ./explorer/rca:/etc/hyperledger/msp/
+      # Map the folder to exchange data
+      - ./explorer/exchangedata:/etc/hyperledger/exchangedata
+      # Explorer APP mount path
+      - ./explorer/app/explorerconfig.json:/opt/explorer/app/explorerconfig.json
+      - ./explorer/app/config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./explorer/app/logs:/opt/explorer/logs
+      - ./explorer/app/platform/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ./explorer/app/ssl-certs:/opt/explorer/ssl-certs
+      - ./explorer/app/walletstore:/opt/explorer/wallet
+    networks:
+      - drink.net
+
+# ==================================================================
+
+# END
