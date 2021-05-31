@@ -1,0 +1,49 @@
+# ----------
+# SPDX-License-Identifier: Apache-2.0
+# ----------
+#
+---
+################################################################################
+#   Section: Organizations
+#   - This section defines the different organizational identities which will
+#   be referenced later in the configuration.
+################################################################################
+Organizations: 
+
+    - &Juice
+        # Defines the organization which is used in the config 
+        # of the fabric.git development environment
+        Name: JuiceMSP
+
+        # ID to load the MSP definition as
+        ID: JuiceMSP
+
+        MSPDir: ./rca/users/peer0/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies: 
+            Readers:
+                Type: Signature
+                Rule: "OR('JuiceMSP.admin','JuiceMSP.member','JuiceMSP.peer','JuiceMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('JuiceMSP.admin','JuiceMSP.member','JuiceMSP.peer','JuiceMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('JuiceMSP.admin','JuiceMSP.peer')"
+
+        # OrdererEndpoints is a list of all orderers this org runs which clients
+        # and peers may to connect to to push transactions and receive blocks respectively.
+        # OrdererEndpoints:
+        #     - "orderer.blockchain.biz:7050"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.juice.blockchain.biz
+              Port: 8134
+
+# END
