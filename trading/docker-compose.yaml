@@ -1,0 +1,245 @@
+# ----------
+# SPDX-License-Identifier: Apache-2.0
+# ----------
+#
+version: '3.5'
+
+volumes:
+   trading.orderer0:
+   trading.orderer1:
+   trading.orderer2:
+
+networks:
+  trading.net:
+    name: trading.blockchain
+
+services:
+
+  rca.trading:
+    container_name: rca.trading.blockchain.biz
+    image: hyperledger/fabric-ca:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=trading.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca/server
+      - FABRIC_CA_SERVER_PORT=6005
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CA_NAME=rca.trading.blockchain.biz
+      - FABRIC_CA_SERVER_CSR_CN=trading.blockchain.biz
+      - FABRIC_CA_SERVER_CSR_HOSTS=rca.trading.blockchain.biz
+      - FABRIC_CA_SERVER_DEBUG=true
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:6045
+      - FABRIC_CA_SERVER_METRICS_PROVIDER=prometheus
+    working_dir: /etc/hyperledger/fabric-ca/server 
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca:/etc/hyperledger/fabric-ca
+    networks:
+      - trading.net
+    ports:
+      - 6005:6005
+      - 6045:6045
+    command: sh -c 'fabric-ca-server start -d -b rca-admin:rca-pwd --port 6005'
+
+# ==================================================================
+
+  orderer0.trading:
+    container_name: orderer0.trading.blockchain.biz
+    image: hyperledger/fabric-orderer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=trading.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:7055
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-trading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-trading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer0-trading
+      - ORDERER_HOST=orderer0.trading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./orderer0:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca/client:/etc/hyperledger/msp/client
+      - ./rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./rca/users/orderer0:/etc/hyperledger/msp/users/orderer
+      # Folder with block channel config and tx file
+      - ../config:/etc/hyperledger/config
+      - ../channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6130:7050
+      - 6145:7055
+    networks:
+      - trading.net
+    command: orderer
+
+  orderer1.trading:
+    container_name: orderer1.trading.blockchain.biz
+    image: hyperledger/fabric-orderer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=trading.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_trading.orderer1TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_trading.orderer1TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_trading.orderer1TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_trading.orderer1TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:7055
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-trading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-trading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer1-trading
+      - ORDERER_HOST=orderer1.trading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./orderer1:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca/client:/etc/hyperledger/msp/client
+      - ./rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./rca/users/orderer1:/etc/hyperledger/msp/users/orderer
+      # Folder with block channel config and tx file
+      - ../config:/etc/hyperledger/config
+      - ../channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6230:7050
+      - 6245:7055
+    networks:
+      - trading.net
+    depends_on:
+      - orderer1.trading
+    command: orderer    
+
+  orderer2.trading:
+    container_name: orderer2.trading.blockchain.biz
+    image: hyperledger/fabric-orderer:1.4.9
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=trading.blockchain
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - ORDERER_HOME=/etc/hyperledger/fabric
+      - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/fabric/production
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISPROFILE=MultiOrgOrdererEtcdRaft
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=TradingMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/users/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+      - GODEBUG=netdns=go
+      # Operations
+      - ORDERER_GENERAL_OPERATIONS_LISTENADDRESS=0.0.0.0:7055
+      - ORDERER_GENERAL_METRICS_PROVIDER=prometheus
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+      # Additional ORDERER vars to support configs at runtime
+      - TLSR_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-tlsring-tls-cert.pem
+      - RCA_TLS_CERT=/etc/hyperledger/msp/client/tls-ca/rca-trading-tls-cert.pem
+      - ORDERER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/client/tls-root-cert/rca-trading-ca-cert.pem
+      - ORDERER_CACERT=/etc/hyperledger/msp/users/orderer/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      - ADMIN_ORDERER_CACERT=/etc/hyperledger/msp/users/admin/msp/cacerts/rca-trading-blockchain-biz-6005.pem
+      # Ordering CLuster
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/msp/users/orderer/tls-msp/signcerts/cert.pem
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/msp/users/orderer/tls-msp/keystore/key.pem
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/msp/users/orderer/tls-msp/tlscacerts/tls-rca-tlsring-blockchain-biz-5005.pem]
+      - ORDERER_FILELEDGER_PREFIX=hlf-orderer2-trading
+      - ORDERER_HOST=orderer2.trading.blockchain.biz
+    working_dir: /etc/hyperledger/fabric
+    volumes:
+      # VM docker stream folder mapping
+      - /var/run/:/host/var/run/
+      # Default root path
+      - ./orderer2:/etc/hyperledger/fabric
+      # Map the folder to root of Fabric CA crypto assets
+      - ./rca/client:/etc/hyperledger/msp/client
+      - ./rca/users/admin:/etc/hyperledger/msp/users/admin
+      - ./rca/users/orderer2:/etc/hyperledger/msp/users/orderer
+      # Folder with block channel config and tx file
+      - ../config:/etc/hyperledger/config
+      - ../channel:/etc/hyperledger/channel
+      # For chaincode and application
+      - ../application:/etc/hyperledger/application
+      - ../chaincode:/etc/hyperledger/chaincode
+    ports:
+      - 6330:7050
+      - 6345:7055
+    networks:
+      - trading.net
+    depends_on:
+      - trading.orderer0
+    command: orderer
+
+# End
