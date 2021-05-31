@@ -1,0 +1,32 @@
+sudo gedit /etc/hosts
+#
+#
+127.0.0.1 rca.tlsring.blockchain.biz
+#
+127.0.0.1 rca.trading.blockchain.biz
+127.0.0.1 orderer0.trading.blockchain.biz
+127.0.0.1 orderer1.trading.blockchain.biz
+127.0.0.1 orderer2.trading.blockchain.biz
+127.0.0.1 orderer3.trading.blockchain.biz
+#
+127.0.0.1 rca.coffee.blockchain.biz
+127.0.0.1 couchdb0.coffee.blockchain.biz
+127.0.0.1 couchdb1.coffee.blockchain.biz
+127.0.0.1 peer0.coffee.blockchain.biz
+127.0.0.1 peer1.coffee.blockchain.biz
+#
+127.0.0.1 rca.juice.blockchain.biz
+127.0.0.1 couchdb0.juice.blockchain.biz
+127.0.0.1 couchdb1.juice.blockchain.biz
+127.0.0.1 peer0.juice.blockchain.biz
+127.0.0.1 peer1.juice.blockchain.biz
+#
+127.0.0.1 rca.wine.blockchain.biz
+127.0.0.1 couchdb0.wine.blockchain.biz
+127.0.0.1 couchdb1.wine.blockchain.biz
+127.0.0.1 peer0.wine.blockchain.biz
+127.0.0.1 peer1.wine.blockchain.biz
+#
+127.0.0.1 app.explorer.blockchain.biz
+127.0.0.1 db.explorer.blockchain.biz
+

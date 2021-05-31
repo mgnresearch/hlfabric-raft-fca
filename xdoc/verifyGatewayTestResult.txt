@@ -1,0 +1,15 @@
+$ ../application/verifyGateway.sh 
+
+Verify gateway connection to the network
+X509WalletMixin.createIdentity.
+Successfully user identity imported it into the wallet
+Before connect to Fabric gateway, using application specified parameters
+After connect to Fabric Gateway.
+Access blockchain network. Use network channel: devchannel . 
+Network connection OK to: devchannel . 
+Before getClient from Gateway
+After getClient from Gateway. Is in DevMode? = false
+After getPeer from Client. Peer = Peer:{url:grpcs://peer0.coffee.blockchain.biz:7134}
+Test OK
+Disconnect from Fabric Gateway.
+Program complete.
